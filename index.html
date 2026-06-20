@@ -5016,8 +5016,20 @@ body.kaek-point-delete-mode .leaflet-interactive {
                     sourceType
                 );
 
-                // Δεν εμφανίζεται πλέον αριθμός/ετικέτα μόνιμα πάνω
-                // από τις κουκκίδες που εισάγονται από Excel.
+                // Εμφάνιση του ΚΑΕΚ με mouseover, χωρίς να χρειάζεται κλικ.
+                // Εφαρμόζεται τόσο στα ΚΑΕΚ Δημοτικής Περιουσίας
+                // όσο και στα μελλοντικά ΚΑΕΚ από Excel.
+                marker.bindTooltip(
+                    "ΚΑΕΚ: " + (featureKaek || "-"),
+                    {
+                        direction: "top",
+                        sticky: false,
+                        opacity: 1,
+                        className: "foliumtooltip",
+                        pane: "tooltipPane"
+                    }
+                );
+
                 marker.bindPopup(excelFeaturePopup(feature));
                 marker.addTo(targetLayer);
 
