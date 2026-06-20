@@ -1618,6 +1618,122 @@ body.kaek-point-delete-mode .leaflet-interactive {
 }
 </style>
 
+
+<style id="improved-kaek-search-style">
+/* =========================================================
+   Βελτιωμένη αναζήτηση επάνω αριστερά
+   ========================================================= */
+.kaek-all-search-results {
+    display: none;
+    margin-top: 7px;
+    border-top: 1px solid #d5dde3;
+    padding-top: 6px;
+}
+
+.kaek-all-search-results.is-visible {
+    display: block;
+}
+
+.kaek-search-results-summary {
+    margin: 0 0 6px;
+    padding: 5px 7px;
+    border-radius: 5px;
+    background: #eef6fb;
+    color: #1b4f72;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.kaek-search-results-list {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+.kaek-search-result-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    box-sizing: border-box;
+    margin: 0 0 5px;
+    padding: 8px 9px;
+    border: 1px solid #c8d4dc;
+    border-radius: 6px;
+    background: #fff;
+    color: #1f2d3d;
+    cursor: pointer;
+    text-align: left;
+    font-family: Arial, sans-serif;
+}
+
+.kaek-search-result-item:last-child {
+    margin-bottom: 0;
+}
+
+.kaek-search-result-item:hover,
+.kaek-search-result-item:focus {
+    border-color: #1596e5;
+    background: #eaf6fd;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(21,150,229,.13);
+}
+
+.kaek-search-result-main {
+    min-width: 0;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.kaek-search-result-main mark {
+    padding: 0 1px;
+    border-radius: 2px;
+    background: #ffe680;
+    color: #17202a;
+}
+
+.kaek-search-result-source {
+    flex: 0 0 auto;
+    max-width: 88px;
+    color: #5d6d7e;
+    font-size: 9px;
+    line-height: 1.15;
+    text-align: right;
+}
+
+.kaek-search-minimum-note,
+.kaek-search-no-results {
+    padding: 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.kaek-search-minimum-note {
+    background: #f8f9f9;
+    color: #566573;
+    border: 1px solid #d5dbdb;
+}
+
+.kaek-search-no-results {
+    background: #fdedec;
+    color: #922b21;
+    border: 1px solid #f1948a;
+}
+
+@media (max-width: 760px) {
+    .kaek-search-results-list {
+        max-height: min(300px, calc(100vh - 180px));
+    }
+}
+</style>
+
 </head>
 <body>
 
@@ -6533,6 +6649,278 @@ body.kaek-point-delete-mode .leaflet-interactive {
         return null;
     }
 
+
+    function collectSearchableKaekLayers(layer, source, rootLayer, results, visited) {
+        if (!layer || visited.has(layer)) return;
+        visited.add(layer);
+
+        const kaek = featureKaek(layer);
+        if (kaek) {
+            results.push({
+                kaek: kaek,
+                digits: kaek.replace(/\D/g, ""),
+                layer: layer,
+                source: source,
+                rootLayer: rootLayer
+            });
+        }
+
+        if (typeof layer.eachLayer === "function") {
+            layer.eachLayer(function (child) {
+                collectSearchableKaekLayers(
+                    child,
+                    source,
+                    rootLayer,
+                    results,
+                    visited
+                );
+            });
+        }
+    }
+
+    function buildAllKaekSearchIndex() {
+        const collected = [];
+        const visited = new Set();
+
+        // Πρώτα το εμπλουτισμένο Excel, μετά τα εισαγόμενα KML/KMZ.
+        if (typeof excelKaekLayer !== "undefined") {
+            collectSearchableKaekLayers(
+                excelKaekLayer,
+                "Excel",
+                excelKaekLayer,
+                collected,
+                visited
+            );
+        }
+
+        if (typeof verifiedKaekLayer !== "undefined") {
+            collectSearchableKaekLayers(
+                verifiedKaekLayer,
+                "KML/KMZ",
+                verifiedKaekLayer,
+                collected,
+                visited
+            );
+        }
+
+        collectSearchableKaekLayers(
+            initialKaekLayer,
+            "Αρχικά ΚΑΕΚ",
+            initialKaekLayer,
+            collected,
+            visited
+        );
+
+        // Ένα αποτέλεσμα ανά μοναδικό ΚΑΕΚ, ακόμη και αν υπάρχει σε πάνω από μία πηγή.
+        const uniqueByKaek = new Map();
+
+        collected.forEach(function (item) {
+            if (!item.digits) return;
+            if (!uniqueByKaek.has(item.kaek)) {
+                uniqueByKaek.set(item.kaek, item);
+            }
+        });
+
+        return Array.from(uniqueByKaek.values()).sort(function (a, b) {
+            return a.kaek.localeCompare(b.kaek, "el", {
+                numeric: true,
+                sensitivity: "base"
+            });
+        });
+    }
+
+    function normalizeSearchDigits(value) {
+        return String(value || "").replace(/\D/g, "");
+    }
+
+    function findPartialKaekMatches(queryDigits) {
+        if (queryDigits.length < 3) return [];
+
+        return buildAllKaekSearchIndex().filter(function (item) {
+            return item.digits.includes(queryDigits);
+        });
+    }
+
+    let currentKaekSearchResults = [];
+    let kaekSearchDebounceTimer = null;
+
+    function hideKaekSearchResults() {
+        const box = document.getElementById("kaek-all-search-results");
+        if (!box) return;
+        box.classList.remove("is-visible");
+        box.innerHTML = "";
+        currentKaekSearchResults = [];
+    }
+
+    function appendHighlightedKaek(container, kaek, queryDigits) {
+        const kaekText = String(kaek || "");
+        const digitPositions = [];
+        let digitsOnly = "";
+
+        for (let i = 0; i < kaekText.length; i++) {
+            if (/\d/.test(kaekText[i])) {
+                digitPositions.push(i);
+                digitsOnly += kaekText[i];
+            }
+        }
+
+        const matchStart = digitsOnly.indexOf(queryDigits);
+
+        if (matchStart < 0) {
+            container.textContent = kaekText;
+            return;
+        }
+
+        const startOriginal = digitPositions[matchStart];
+        const endOriginal = digitPositions[
+            matchStart + queryDigits.length - 1
+        ];
+
+        container.appendChild(
+            document.createTextNode(kaekText.slice(0, startOriginal))
+        );
+
+        const mark = document.createElement("mark");
+        mark.textContent = kaekText.slice(startOriginal, endOriginal + 1);
+        container.appendChild(mark);
+
+        container.appendChild(
+            document.createTextNode(kaekText.slice(endOriginal + 1))
+        );
+    }
+
+    function renderKaekSearchResults(queryDigits, matches) {
+        const box = document.getElementById("kaek-all-search-results");
+        if (!box) return;
+
+        box.innerHTML = "";
+        box.classList.add("is-visible");
+        currentKaekSearchResults = matches.slice();
+
+        if (queryDigits.length < 3) {
+            const note = document.createElement("div");
+            note.className = "kaek-search-minimum-note";
+            note.textContent =
+                "Γράψε τουλάχιστον 3 αριθμούς για να εμφανιστούν αποτελέσματα.";
+            box.appendChild(note);
+            return;
+        }
+
+        if (!matches.length) {
+            const empty = document.createElement("div");
+            empty.className = "kaek-search-no-results";
+            empty.textContent =
+                'Δεν βρέθηκε ΚΑΕΚ που να περιέχει το "' +
+                queryDigits +
+                '".';
+            box.appendChild(empty);
+            return;
+        }
+
+        const summary = document.createElement("div");
+        summary.className = "kaek-search-results-summary";
+        summary.textContent =
+            matches.length +
+            (matches.length === 1
+                ? " αποτέλεσμα"
+                : " αποτελέσματα") +
+            ' που περιέχουν "' +
+            queryDigits +
+            '"';
+        box.appendChild(summary);
+
+        const list = document.createElement("div");
+        list.className = "kaek-search-results-list";
+        list.setAttribute("role", "listbox");
+
+        matches.forEach(function (result, index) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "kaek-search-result-item";
+            button.dataset.resultIndex = String(index);
+            button.setAttribute("role", "option");
+            button.title = "Μετάβαση και εστίαση στο ΚΑΕΚ " + result.kaek;
+
+            const main = document.createElement("span");
+            main.className = "kaek-search-result-main";
+            appendHighlightedKaek(main, result.kaek, queryDigits);
+
+            const source = document.createElement("span");
+            source.className = "kaek-search-result-source";
+            source.textContent = result.source;
+
+            button.appendChild(main);
+            button.appendChild(source);
+            list.appendChild(button);
+        });
+
+        box.appendChild(list);
+    }
+
+    function runPartialKaekSearch() {
+        const input = document.getElementById("kaek-all-search-input");
+        if (!input) return;
+
+        const queryDigits = normalizeSearchDigits(input.value);
+
+        if (input.value !== queryDigits) {
+            input.value = queryDigits;
+        }
+
+        if (queryDigits.length < 3) {
+            showSearchMessage("", "");
+            renderKaekSearchResults(queryDigits, []);
+            return;
+        }
+
+        const matches = findPartialKaekMatches(queryDigits);
+        renderKaekSearchResults(queryDigits, matches);
+
+        if (!matches.length) {
+            showSearchMessage(
+                "Δεν βρέθηκαν αποτελέσματα.",
+                "error"
+            );
+        } else {
+            showSearchMessage(
+                "Επίλεξε ένα αποτέλεσμα για μετάβαση και zoom.",
+                "ok"
+            );
+        }
+    }
+
+    function selectKaekSearchResult(index) {
+        const result = currentKaekSearchResults[index];
+        if (!result) return;
+
+        try {
+            if (
+                result.rootLayer &&
+                typeof map.hasLayer === "function" &&
+                !map.hasLayer(result.rootLayer)
+            ) {
+                map.addLayer(result.rootLayer);
+            }
+        } catch (e) {}
+
+        if (focusLayer(result.layer)) {
+            showSearchMessage(
+                "Μετάβαση στο ΚΑΕΚ " +
+                result.kaek +
+                " (" +
+                result.source +
+                ").",
+                "ok"
+            );
+            hideKaekSearchResults();
+        } else {
+            showSearchMessage(
+                "Το ΚΑΕΚ βρέθηκε αλλά δεν ήταν δυνατό να γίνει εστίαση.",
+                "error"
+            );
+        }
+    }
+
     function focusLayer(layer) {
         if (!layer) return false;
 
@@ -6597,13 +6985,15 @@ body.kaek-point-delete-mode .leaflet-interactive {
                 '<div id="kaek-all-search-expanded" class="kaek-all-search-expanded">' +
                     '<div class="kaek-all-search-row">' +
                         '<input id="kaek-all-search-input" class="kaek-all-search-input" ' +
-                        'type="text" placeholder="Αναζήτηση όλων των ΚΑΕΚ…">' +
+                        'type="text" placeholder="ΠΛΗΚΤΡΟΛΟΓΗΣΤΕ ΚΑΕΚ...">' +
                         '<button id="kaek-all-search-button" class="kaek-all-search-button" ' +
                         'type="button" title="Αναζήτηση">' +
                         '<i class="fa-solid fa-magnifying-glass"></i>' +
                         '</button>' +
                     '</div>' +
                     '<div id="kaek-all-search-message" class="kaek-all-search-message"></div>' +
+                    '<div id="kaek-all-search-results" class="kaek-all-search-results" ' +
+                         'role="region" aria-label="Αποτελέσματα αναζήτησης ΚΑΕΚ"></div>' +
                 '</div>';
 
             L.DomEvent.disableClickPropagation(container);
@@ -6618,43 +7008,19 @@ body.kaek-point-delete-mode .leaflet-interactive {
     function showSearchMessage(text, kind) {
         const box = document.getElementById("kaek-all-search-message");
         if (!box) return;
+
+        if (!text) {
+            box.textContent = "";
+            box.className = "kaek-all-search-message";
+            return;
+        }
+
         box.textContent = text;
         box.className = "kaek-all-search-message " + kind;
     }
 
     function runAllKaekSearch() {
-        const input = document.getElementById("kaek-all-search-input");
-        if (!input) return;
-
-        const kaek = normalizeKaek(input.value);
-        input.value = kaek;
-
-        if (!kaek) {
-            showSearchMessage("Γράψε πρώτα έναν ΚΑΕΚ.", "error");
-            return;
-        }
-
-        const result = findKaekLayer(kaek);
-
-        if (!result) {
-            showSearchMessage(
-                "Ο ΚΑΕΚ δεν υπάρχει στο νέο εμπλουτισμένο Excel ή στα εισαγόμενα KML/KMZ.",
-                "error"
-            );
-            return;
-        }
-
-        if (focusLayer(result.layer)) {
-            showSearchMessage(
-                "Βρέθηκε στα " + result.source + ".",
-                "ok"
-            );
-        } else {
-            showSearchMessage(
-                "Ο ΚΑΕΚ βρέθηκε αλλά δεν ήταν δυνατό να γίνει εστίαση.",
-                "error"
-            );
-        }
+        runPartialKaekSearch();
     }
 
     function setAllKaekSearchExpanded(expanded) {
@@ -6665,6 +7031,10 @@ body.kaek-point-delete-mode .leaflet-interactive {
         if (!control) return;
 
         control.classList.toggle("is-expanded", expanded);
+
+        if (!expanded) {
+            hideKaekSearchResults();
+        }
 
         if (toggle) {
             toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
@@ -6704,6 +7074,23 @@ body.kaek-point-delete-mode .leaflet-interactive {
         }
 
         if (input) {
+            input.setAttribute("inputmode", "numeric");
+            input.setAttribute("autocomplete", "off");
+            input.placeholder = "ΠΛΗΚΤΡΟΛΟΓΗΣΤΕ ΚΑΕΚ...";
+
+            input.addEventListener("input", function () {
+                window.clearTimeout(kaekSearchDebounceTimer);
+
+                const digits = normalizeSearchDigits(input.value);
+                if (input.value !== digits) {
+                    input.value = digits;
+                }
+
+                kaekSearchDebounceTimer = window.setTimeout(function () {
+                    runPartialKaekSearch();
+                }, 120);
+            });
+
             input.addEventListener("keydown", function (event) {
                 if (event.key === "Enter") {
                     event.preventDefault();
@@ -6712,8 +7099,29 @@ body.kaek-point-delete-mode .leaflet-interactive {
 
                 if (event.key === "Escape") {
                     event.preventDefault();
+                    hideKaekSearchResults();
                     setAllKaekSearchExpanded(false);
                 }
+            });
+        }
+
+        const resultsBox = document.getElementById(
+            "kaek-all-search-results"
+        );
+
+        if (resultsBox) {
+            resultsBox.addEventListener("click", function (event) {
+                const item = event.target.closest(
+                    ".kaek-search-result-item"
+                );
+                if (!item) return;
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                selectKaekSearchResult(
+                    Number(item.dataset.resultIndex)
+                );
             });
         }
 
