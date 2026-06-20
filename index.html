@@ -2403,6 +2403,26 @@ body.kaek-point-delete-mode .leaflet-interactive {
             );
             L.control.scale().addTo(map_4c47b80f517b28666317d5cc9713d72b);
 
+            // Όλα τα ΚΑΕΚ παραμένουν πάνω από Ο.Τ., σχέδια πόλης,
+            // όρια οικισμών, ζώνες και άλλα διανυσματικά επίπεδα.
+            if (
+                !map_4c47b80f517b28666317d5cc9713d72b.getPane(
+                    "kaekTopPane"
+                )
+            ) {
+                map_4c47b80f517b28666317d5cc9713d72b.createPane(
+                    "kaekTopPane"
+                );
+            }
+
+            var kaekTopPane =
+                map_4c47b80f517b28666317d5cc9713d72b.getPane(
+                    "kaekTopPane"
+                );
+
+            kaekTopPane.style.zIndex = "645";
+            kaekTopPane.style.pointerEvents = "auto";
+
             
 
         
@@ -2821,6 +2841,7 @@ body.kaek-point-delete-mode .leaflet-interactive {
   "fillRule": "evenodd",
   "bubblingMouseEvents": true,
   "radius": 5,
+  "pane": "kaekTopPane",
 };
             
             let style = geo_json_f77830402a9d13ae85fcb11a1ca116a2_styler(feature)
@@ -2840,6 +2861,7 @@ body.kaek-point-delete-mode .leaflet-interactive {
             });
         };
         var geo_json_f77830402a9d13ae85fcb11a1ca116a2 = L.geoJson(null, {
+                pane: "kaekTopPane",
                 onEachFeature: geo_json_f77830402a9d13ae85fcb11a1ca116a2_onEachFeature,
             
                 style: geo_json_f77830402a9d13ae85fcb11a1ca116a2_styler,
@@ -2962,6 +2984,30 @@ body.kaek-point-delete-mode .leaflet-interactive {
 
         
     
+
+            function keepKaekLayersOnTop() {
+                var pane =
+                    map_4c47b80f517b28666317d5cc9713d72b.getPane(
+                        "kaekTopPane"
+                    );
+
+                if (pane) {
+                    pane.style.zIndex = "645";
+                }
+            }
+
+            map_4c47b80f517b28666317d5cc9713d72b.on(
+                "overlayadd zoomend moveend",
+                keepKaekLayersOnTop
+            );
+
+            window.addEventListener(
+                "resize",
+                keepKaekLayersOnTop
+            );
+
+            keepKaekLayersOnTop();
+
             L.control.fullscreen(
                 {
   "position": "topright",
@@ -4252,12 +4298,14 @@ body.kaek-point-delete-mode .leaflet-interactive {
                 }
 
                 const layer = L.geoJSON(collection, {
+                    pane: "kaekTopPane",
                     style: function(feature) {
                         const p = feature.properties || {};
                         const kaek = getFeatureKaek(feature, p.importedKaek || "");
                         const color = colorForKaek(kaek);
 
                         return {
+                            pane: "kaekTopPane",
                             color: color,
                             weight: 3,
                             opacity: 1,
@@ -4273,6 +4321,7 @@ body.kaek-point-delete-mode .leaflet-interactive {
 
                         // Ίδιο στυλ σημείου με τα αρχικά 620 ΚΑΕΚ.
                         return L.circleMarker(latlng, {
+                            pane: "kaekTopPane",
                             radius: 5,
                             color: color,
                             weight: 1,
@@ -4821,6 +4870,7 @@ body.kaek-point-delete-mode .leaflet-interactive {
                         : "#008b8b";
 
                 return {
+                    pane: "kaekTopPane",
                     radius: 6,
                     color: color,
                     weight: 2,
