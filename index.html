@@ -3020,6 +3020,57 @@ body.kaek-point-delete-mode .leaflet-interactive {
 
             keepKaekLayersOnTop();
 
+
+            function enforceMapLayerVisualOrder() {
+                var settlementPane =
+                    map_4c47b80f517b28666317d5cc9713d72b.getPane(
+                        "epoleodomiaSettlementPane"
+                    );
+
+                var urbanPane =
+                    map_4c47b80f517b28666317d5cc9713d72b.getPane(
+                        "epoleodomiaUrbanPane"
+                    );
+
+                var blocksPane =
+                    map_4c47b80f517b28666317d5cc9713d72b.getPane(
+                        "epoleodomiaBlocksPane"
+                    );
+
+                var kaekPane =
+                    map_4c47b80f517b28666317d5cc9713d72b.getPane(
+                        "kaekTopPane"
+                    );
+
+                if (settlementPane) {
+                    settlementPane.style.zIndex = "410";
+                }
+
+                if (urbanPane) {
+                    urbanPane.style.zIndex = "420";
+                }
+
+                if (blocksPane) {
+                    blocksPane.style.zIndex = "430";
+                }
+
+                if (kaekPane) {
+                    kaekPane.style.zIndex = "645";
+                }
+            }
+
+            map_4c47b80f517b28666317d5cc9713d72b.on(
+                "overlayadd overlayremove zoomend moveend",
+                enforceMapLayerVisualOrder
+            );
+
+            window.addEventListener(
+                "resize",
+                enforceMapLayerVisualOrder
+            );
+
+            enforceMapLayerVisualOrder();
+
             L.control.fullscreen(
                 {
   "position": "topright",
@@ -3139,9 +3190,14 @@ body.kaek-point-delete-mode .leaflet-interactive {
                 .style.zIndex = String(zIndex);
         }
 
-        ensureEpolyPane("epoleodomiaUrbanPane", 421);
-        ensureEpolyPane("epoleodomiaBlocksPane", 422);
-        ensureEpolyPane("epoleodomiaSettlementPane", 423);
+        // Σειρά σχεδίασης από κάτω προς τα πάνω:
+        // 410: όρια και καταγεγραμμένοι οικισμοί
+        // 420: πολεοδομικές ενότητες / σχέδια πόλης
+        // 430: οικοδομικά τετράγωνα
+        // 645: ΚΑΕΚ
+        ensureEpolyPane("epoleodomiaSettlementPane", 410);
+        ensureEpolyPane("epoleodomiaUrbanPane", 420);
+        ensureEpolyPane("epoleodomiaBlocksPane", 430);
 
         function epolyValue(properties, names, fallback) {
             var source = properties || {};
@@ -4095,12 +4151,14 @@ body.kaek-point-delete-mode .leaflet-interactive {
         registered_settlement_zones.addTo(registered_settlements_group);
 
         var registered_settlements_points = L.esri.featureLayer({
+            pane: "epoleodomiaSettlementPane",
             url: "https://mapsrv16.terra.gr/server/rest/services/EniaiosPsifiakosChartis/DioikitikiDiairesiNew/MapServer/0",
             where: "pu_gr LIKE '%ΠΡΕΒΕΖ%'",
             simplifyFactor: 0.5,
             precision: 5,
             pointToLayer: function(geojson, latlng) {
                 return L.circleMarker(latlng, {
+                    pane: "epoleodomiaSettlementPane",
                     radius: 6,
                     color: "#6c3483",
                     weight: 2,
@@ -4141,6 +4199,7 @@ body.kaek-point-delete-mode .leaflet-interactive {
                 if (!registered_settlement_zones._settlementIds[oid]) {
                     registered_settlement_zones._settlementIds[oid] = true;
                     L.circle(layer.getLatLng(), {
+                        pane: "epoleodomiaSettlementPane",
                         radius: 300,
                         color: "#8e44ad",
                         weight: 2,
@@ -7056,8 +7115,8 @@ body.kaek-point-delete-mode .leaflet-interactive {
 "Δικοί μου οικισμοί" : customSettlementsLayer,
 "Ζώνη 100 μ. οικισμού" : settlementBuffer100Layer,
 "Επιβεβαιωμένα νέα ΚΑΕΚ" : verifiedKaekLayer,
-"Όλοι οι καταγεγραμμένοι οικισμοί Πρέβεζας" : registered_settlements_group,
                     "Εγκεκριμένα πολεοδομικά σχέδια / Ο.Τ." : approved_urban_plans_all,
+"Όλοι οι καταγεγραμμένοι οικισμοί Πρέβεζας" : registered_settlements_group,
 "Πρέβεζα – όριο σχεδίου πόλης" : preveza_urban_plan_official,
 "Εγκεκριμένα όρια οικισμών" : settlement_boundaries_official,
                 },
