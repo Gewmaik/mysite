@@ -1564,9 +1564,9 @@ body.kaek-point-delete-mode .leaflet-interactive {
     #cadastre-style-toolbar {
         top: 8px !important;
         left: auto !important;
-        right: 6px !important;
+        right: 52px !important;
         width: max-content !important;
-        max-width: calc(100vw - 62px) !important;
+        max-width: calc(100vw - 108px) !important;
         transform: none !important;
         justify-content: flex-start !important;
         gap: 3px !important;
@@ -1604,9 +1604,9 @@ body.kaek-point-delete-mode .leaflet-interactive {
 @media (max-width: 520px) {
     #cadastre-style-toolbar {
         left: auto !important;
-        right: 4px !important;
+        right: 48px !important;
         width: max-content !important;
-        max-width: calc(100vw - 58px) !important;
+        max-width: calc(100vw - 102px) !important;
     }
 
     .cadastre-tool-button {
@@ -1731,6 +1731,80 @@ body.kaek-point-delete-mode .leaflet-interactive {
     .kaek-search-results-list {
         max-height: min(300px, calc(100vh - 180px));
     }
+}
+</style>
+
+
+<style id="epoly-persistent-cache-style">
+.epoly-cache-controls {
+    margin-top: 10px;
+    padding: 9px;
+    border: 1px solid #c8d6df;
+    border-radius: 8px;
+    background: #f7fafc;
+    font-family: Arial, sans-serif;
+}
+
+.epoly-cache-refresh-button {
+    width: 100%;
+    border: 0;
+    border-radius: 7px;
+    padding: 9px 8px;
+    background: #566573;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.epoly-cache-refresh-button:hover {
+    background: #3f4d55;
+}
+
+.epoly-cache-refresh-button:disabled {
+    cursor: wait;
+    opacity: .65;
+}
+
+.epoly-cache-status {
+    margin-top: 7px;
+    padding: 7px;
+    border-radius: 6px;
+    background: #ebf5fb;
+    color: #1b4f72;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.epoly-cache-status.ok {
+    border: 1px solid #7dcea0;
+    background: #e8f6f3;
+    color: #0b5345;
+}
+
+.epoly-cache-status.loading {
+    border: 1px solid #85c1e9;
+    background: #ebf5fb;
+    color: #1b4f72;
+}
+
+.epoly-cache-status.warning {
+    border: 1px solid #f8c471;
+    background: #fef5e7;
+    color: #7e5109;
+}
+
+.epoly-cache-status.error {
+    border: 1px solid #f1948a;
+    background: #fdedec;
+    color: #922b21;
+}
+
+.epoly-cache-note {
+    margin-top: 6px;
+    color: #61717c;
+    font-size: 10px;
+    line-height: 1.35;
 }
 </style>
 
@@ -2964,331 +3038,997 @@ body.kaek-point-delete-mode .leaflet-interactive {
                 undefined;
             map_4c47b80f517b28666317d5cc9713d72b.addControl(mouse_position_cdcf685d8dfcf1294025ca9167d488c2);
 
-        // Επίσημα καθορισμένα όρια οικισμών από την e-Πολεοδομία.
-        var settlement_boundaries_official = L.esri.dynamicMapLayer({
-            url: "https://mapsrv16.terra.gr/server/rest/services/EniaiosPsifiakosChartis/e_Poleodomia_branchVersioningV5/MapServer",
-            format: "png32",
-            transparent: true,
-            opacity: 1,
-            minZoom: 7,
-            dynamicLayers: [
-                {
-                    id: 22,
-                    source: {
-                        type: "mapLayer",
-                        mapLayerId: 22
-                    },
-                    drawingInfo: {
-                        renderer: {
-                            type: "simple",
-                            symbol: {
-                                type: "esriSFS",
-                                style: "esriSFSSolid",
-                                color: [255, 165, 0, 32],
-                                outline: {
-                                    type: "esriSLS",
-                                    style: "esriSLSSolid",
-                                    color: [255, 102, 0, 255],
-                                    width: 3
-                                }
-                            }
-                        },
-                        labelingInfo: [
-                            {
-                                labelExpression: "[NAME]",
-                                labelPlacement: "esriServerPolygonPlacementAlwaysHorizontal",
-                                minScale: 100000,
-                                maxScale: 0,
-                                symbol: {
-                                    type: "esriTS",
-                                    color: [120, 55, 0, 255],
-                                    haloColor: [255, 255, 255, 255],
-                                    haloSize: 1.5,
-                                    font: {
-                                        family: "Arial",
-                                        size: 10,
-                                        weight: "bold"
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            ]
-        }).addTo(map_4c47b80f517b28666317d5cc9713d72b);
+        // ============================================================
+        // ΕΠΙΣΗΜΑ ΠΟΛΕΟΔΟΜΙΚΑ ΕΠΙΠΕΔΑ — e-Πολεοδομία
+        // ============================================================
+        //
+        // Τα προηγούμενα raster DynamicMapLayer αντικαταστάθηκαν από
+        // πραγματικά διανυσματικά Feature Layers. Έτσι τα περιγράμματα
+        // σχεδιάζονται επάνω από τον δορυφορικό χάρτη και δεν εξαρτώνται
+        // από το dynamicLayers/export του εξωτερικού MapServer.
+        //
+        // Πρωτεύουσα πηγή:
+        // e_Poleodomia_branchVersioningV5
+        //
+        // Αυτόματο εφεδρικό endpoint:
+        // e_Πολεοδομία210323
+        //
+        // useCors:false αναγκάζει JSONP όταν ο εξωτερικός ArcGIS Server
+        // δεν επιτρέπει κανονικό cross-origin fetch.
 
-        settlement_boundaries_official.bindPopup(function(error, featureCollection) {
-            if (error || !featureCollection || !featureCollection.features.length) {
-                return false;
+        var EPOLEODOMIA_PRIMARY_BASE =
+            "https://mapsrv16.terra.gr/server/rest/services/" +
+            "EniaiosPsifiakosChartis/" +
+            "e_Poleodomia_branchVersioningV5/MapServer/";
+
+        var EPOLEODOMIA_FALLBACK_BASE =
+            "https://mapsrv16.terra.gr/server/rest/services/" +
+            "EniaiosPsifiakosChartis/" +
+            "e_%CE%A0%CE%BF%CE%BB%CE%B5%CE%BF%CE%B4%CE%BF%CE%BC%CE%AF%CE%B1210323/" +
+            "MapServer/";
+
+        function ensureEpolyPane(name, zIndex) {
+            if (
+                !map_4c47b80f517b28666317d5cc9713d72b.getPane(name)
+            ) {
+                map_4c47b80f517b28666317d5cc9713d72b.createPane(
+                    name
+                );
             }
 
-            var properties = featureCollection.features[0].properties || {};
-            var settlementName =
-                properties.NAME ||
-                properties["Ονομασία Οικισμού"] ||
-                "Μη διαθέσιμη ονομασία";
-
-            var decision =
-                properties.APOFASH ||
-                properties["Κωδικός Αριθμός Σχεδίου"] ||
-                "-";
-
-            var settlementType =
-                properties.OIKISMOS_TYPE ||
-                properties["Τύπος Οικισμού"] ||
-                "-";
-
-            return (
-                '<div style="font-family:Arial,sans-serif;min-width:240px;">' +
-                '<b style="font-size:15px;">Οικισμός: ' + settlementName + '</b><br>' +
-                '<b>Απόφαση / σχέδιο:</b> ' + decision + '<br>' +
-                '<b>Τύπος:</b> ' + settlementType +
-                '<br><small>Πηγή: e-Πολεοδομία – Καθορισμένο Όριο Οικισμού</small>' +
-                '</div>'
-            );
-        });
-
-        // Αόρατο βοηθητικό επίπεδο μόνο για την εμφάνιση του ονόματος στο hover.
-        // Δεν αλλάζει καθόλου την πορτοκαλί εμφάνιση των επίσημων ορίων.
-        if (!map_4c47b80f517b28666317d5cc9713d72b.getPane("officialSettlementHoverPane")) {
-            map_4c47b80f517b28666317d5cc9713d72b.createPane(
-                "officialSettlementHoverPane"
-            );
             map_4c47b80f517b28666317d5cc9713d72b
-                .getPane("officialSettlementHoverPane")
-                .style.zIndex = 390;
+                .getPane(name)
+                .style.zIndex = String(zIndex);
         }
 
-        var settlement_boundaries_hover = L.esri.featureLayer({
-            url: "https://mapsrv16.terra.gr/server/rest/services/EniaiosPsifiakosChartis/e_Poleodomia_branchVersioningV5/FeatureServer/22",
-            pane: "officialSettlementHoverPane",
-            simplifyFactor: 0.35,
-            precision: 6,
-            style: function() {
-                return {
-                    color: "#ff6600",
-                    weight: 2,
-                    opacity: 0,
-                    fill: true,
-                    fillColor: "#ff6600",
-                    fillOpacity: 0.001
-                };
-            },
-            onEachFeature: function(feature, layer) {
-                var properties = feature.properties || {};
-                var name =
-                    properties.NAME ||
-                    properties["Ονομασία Οικισμού"] ||
-                    "Οικισμός";
+        ensureEpolyPane("epoleodomiaUrbanPane", 421);
+        ensureEpolyPane("epoleodomiaBlocksPane", 422);
+        ensureEpolyPane("epoleodomiaSettlementPane", 423);
 
-                layer.bindTooltip(name, {
-                    sticky: true,
-                    direction: "top",
-                    opacity: 1,
-                    className: "official-settlement-hover-tooltip"
-                });
-            }
-        }).addTo(map_4c47b80f517b28666317d5cc9713d72b);
+        function epolyValue(properties, names, fallback) {
+            var source = properties || {};
+            var keys = Object.keys(source);
 
-        // Το βοηθητικό hover ακολουθεί την εμφάνιση/απόκρυψη
-        // του κανονικού επίσημου επιπέδου οικισμών.
-        map_4c47b80f517b28666317d5cc9713d72b.on(
-            "overlayremove",
-            function(event) {
-                if (
-                    event.layer === settlement_boundaries_official &&
-                    map_4c47b80f517b28666317d5cc9713d72b.hasLayer(
-                        settlement_boundaries_hover
-                    )
-                ) {
-                    map_4c47b80f517b28666317d5cc9713d72b.removeLayer(
-                        settlement_boundaries_hover
-                    );
-                }
-            }
-        );
+            for (var i = 0; i < names.length; i++) {
+                var wanted = String(names[i]).toUpperCase();
 
-        map_4c47b80f517b28666317d5cc9713d72b.on(
-            "overlayadd",
-            function(event) {
-                if (
-                    event.layer === settlement_boundaries_official &&
-                    !map_4c47b80f517b28666317d5cc9713d72b.hasLayer(
-                        settlement_boundaries_hover
-                    )
-                ) {
-                    settlement_boundaries_hover.addTo(
-                        map_4c47b80f517b28666317d5cc9713d72b
-                    );
-                }
-            }
-        );
+                for (var j = 0; j < keys.length; j++) {
+                    var actual = String(keys[j]).toUpperCase();
 
-        // Πρέβεζα: επίσημες Πολεοδομικές Ενότητες / Τομείς της e-Πολεοδομίας.
-        var preveza_urban_plan_official = L.esri.dynamicMapLayer({
-            url: "https://mapsrv16.terra.gr/server/rest/services/EniaiosPsifiakosChartis/e_Poleodomia_branchVersioningV5/MapServer",
-            format: "png32",
-            transparent: true,
-            opacity: 1,
-            minZoom: 7,
-            dynamicLayers: [
-                {
-                    id: 13,
-                    source: {
-                        type: "mapLayer",
-                        mapLayerId: 13
-                    },
-                    drawingInfo: {
-                        renderer: {
-                            type: "simple",
-                            symbol: {
-                                type: "esriSFS",
-                                style: "esriSFSSolid",
-                                color: [0, 174, 239, 35],
-                                outline: {
-                                    type: "esriSLS",
-                                    style: "esriSLSSolid",
-                                    color: [0, 125, 200, 255],
-                                    width: 3
-                                }
-                            }
+                    if (
+                        actual === wanted ||
+                        actual.endsWith("." + wanted) ||
+                        actual.endsWith("_" + wanted)
+                    ) {
+                        var value = source[keys[j]];
+
+                        if (
+                            value !== null &&
+                            value !== undefined &&
+                            String(value).trim() !== ""
+                        ) {
+                            return value;
                         }
                     }
                 }
-            ]
-        }).addTo(map_4c47b80f517b28666317d5cc9713d72b);
-
-        preveza_urban_plan_official.bindPopup(function(error, featureCollection) {
-            if (error || !featureCollection || !featureCollection.features.length) {
-                return false;
             }
 
-            var properties = featureCollection.features[0].properties || {};
-            var code =
-                properties.PL_ENOT_NO ||
-                properties["Κωδικός ΠΕ"] ||
-                "-";
+            return fallback || "-";
+        }
 
-            var decision =
-                properties.APOFASH ||
-                properties["Κωδικός Αριθμός Σχεδίου"] ||
-                "-";
+        // ============================================================
+        // Φίλτρο μόνο για τον παλιό Νομό / σημερινή Π.Ε. Πρέβεζας.
+        //
+        // Οι κωδικοί 3401–3409 αντιστοιχούν στις διοικητικές ενότητες
+        // του Νομού Πρέβεζας που χρησιμοποιεί το πεδίο DHMOS της
+        // e-Πολεοδομίας.
+        // ============================================================
+        var EPOLEODOMIA_PREVEZA_PREFECTURE_WHERE =
+            "DHMOS >= 3401 AND DHMOS <= 3409";
 
-            return (
-                '<div style="font-family:Arial,sans-serif;min-width:250px;">' +
-                '<b style="font-size:15px;">Πρέβεζα – Σχέδιο πόλης</b><br>' +
-                '<b>Πολεοδομική ενότητα:</b> ' + code + '<br>' +
-                '<b>Απόφαση / σχέδιο:</b> ' + decision +
-                '<br><small>Πηγή: e-Πολεοδομία – Πολεοδομικές Ενότητες / Τομείς</small>' +
-                '</div>'
+        var EPOLEODOMIA_PREVEZA_CITY_CODE = 3406;
+
+        // ============================================================
+        // Μόνιμη cache GeoJSON με IndexedDB.
+        //
+        // Πρώτη επίσκεψη:
+        //   γίνεται λήψη μόνο των δεδομένων της Π.Ε. Πρέβεζας.
+        //
+        // Επόμενες επισκέψεις στον ίδιο browser / ίδια συσκευή:
+        //   τα δεδομένα φορτώνονται αμέσως από IndexedDB.
+        // ============================================================
+        var EPOLEODOMIA_CACHE_DB_NAME =
+            "kaek_epoleodomia_preveza_cache_v1";
+        var EPOLEODOMIA_CACHE_STORE_NAME = "layers";
+        var EPOLEODOMIA_CACHE_VERSION = 1;
+        var EPOLEODOMIA_CACHE_TTL_MS =
+            30 * 24 * 60 * 60 * 1000;
+
+        var epolyCacheDbPromise = null;
+        var epolyDataMemory = Object.create(null);
+        var epolyNetworkPromises = Object.create(null);
+        var epolyRegisteredWrappers = [];
+        var epolyLastStatusMessage =
+            "Η cache της e-Πολεοδομίας είναι έτοιμη.";
+
+        function setEpolyCacheStatus(message, type) {
+            epolyLastStatusMessage = String(message || "");
+
+            var box = document.getElementById(
+                "epoly-cache-status"
             );
-        });
+
+            if (!box) return;
+
+            box.textContent = epolyLastStatusMessage;
+            box.className =
+                "epoly-cache-status " + (type || "");
+        }
+
+        function openEpolyCacheDb() {
+            if (epolyCacheDbPromise) {
+                return epolyCacheDbPromise;
+            }
+
+            epolyCacheDbPromise = new Promise(
+                function(resolve, reject) {
+                    if (!window.indexedDB) {
+                        reject(
+                            new Error(
+                                "Ο browser δεν υποστηρίζει IndexedDB."
+                            )
+                        );
+                        return;
+                    }
+
+                    var request = indexedDB.open(
+                        EPOLEODOMIA_CACHE_DB_NAME,
+                        EPOLEODOMIA_CACHE_VERSION
+                    );
+
+                    request.onupgradeneeded = function(event) {
+                        var db = event.target.result;
+
+                        if (
+                            !db.objectStoreNames.contains(
+                                EPOLEODOMIA_CACHE_STORE_NAME
+                            )
+                        ) {
+                            db.createObjectStore(
+                                EPOLEODOMIA_CACHE_STORE_NAME,
+                                {keyPath: "key"}
+                            );
+                        }
+                    };
+
+                    request.onsuccess = function(event) {
+                        resolve(event.target.result);
+                    };
+
+                    request.onerror = function() {
+                        reject(
+                            request.error ||
+                            new Error(
+                                "Αποτυχία ανοίγματος της cache."
+                            )
+                        );
+                    };
+                }
+            );
+
+            return epolyCacheDbPromise;
+        }
+
+        async function readEpolyCache(cacheKey) {
+            try {
+                var db = await openEpolyCacheDb();
+
+                return await new Promise(
+                    function(resolve, reject) {
+                        var transaction = db.transaction(
+                            EPOLEODOMIA_CACHE_STORE_NAME,
+                            "readonly"
+                        );
+
+                        var store = transaction.objectStore(
+                            EPOLEODOMIA_CACHE_STORE_NAME
+                        );
+
+                        var request = store.get(cacheKey);
+
+                        request.onsuccess = function() {
+                            resolve(request.result || null);
+                        };
+
+                        request.onerror = function() {
+                            reject(request.error);
+                        };
+                    }
+                );
+            } catch (error) {
+                console.warn(
+                    "Δεν ήταν δυνατή η ανάγνωση της cache:",
+                    error
+                );
+                return null;
+            }
+        }
+
+        async function writeEpolyCache(
+            cacheKey,
+            layerId,
+            whereClause,
+            featureCollection
+        ) {
+            try {
+                var db = await openEpolyCacheDb();
+
+                await new Promise(function(resolve, reject) {
+                    var transaction = db.transaction(
+                        EPOLEODOMIA_CACHE_STORE_NAME,
+                        "readwrite"
+                    );
+
+                    var store = transaction.objectStore(
+                        EPOLEODOMIA_CACHE_STORE_NAME
+                    );
+
+                    store.put({
+                        key: cacheKey,
+                        layerId: layerId,
+                        whereClause: whereClause,
+                        savedAt: Date.now(),
+                        data: featureCollection
+                    });
+
+                    transaction.oncomplete = function() {
+                        resolve();
+                    };
+
+                    transaction.onerror = function() {
+                        reject(transaction.error);
+                    };
+                });
+            } catch (error) {
+                console.warn(
+                    "Δεν ήταν δυνατή η αποθήκευση της cache:",
+                    error
+                );
+            }
+        }
+
+        async function clearEpolyCacheDatabase() {
+            epolyDataMemory = Object.create(null);
+            epolyNetworkPromises = Object.create(null);
+
+            try {
+                var db = await openEpolyCacheDb();
+
+                await new Promise(function(resolve, reject) {
+                    var transaction = db.transaction(
+                        EPOLEODOMIA_CACHE_STORE_NAME,
+                        "readwrite"
+                    );
+
+                    transaction.objectStore(
+                        EPOLEODOMIA_CACHE_STORE_NAME
+                    ).clear();
+
+                    transaction.oncomplete = function() {
+                        resolve();
+                    };
+
+                    transaction.onerror = function() {
+                        reject(transaction.error);
+                    };
+                });
+            } catch (error) {
+                console.warn(
+                    "Δεν ήταν δυνατός ο καθαρισμός της cache:",
+                    error
+                );
+            }
+        }
+
+        function buildEpolyCacheKey(layerId, whereClause) {
+            return [
+                "preveza",
+                String(layerId),
+                String(whereClause || "1=1"),
+                "v" + String(EPOLEODOMIA_CACHE_VERSION)
+            ].join("|");
+        }
+
+        function queryEpolySource(
+            baseUrl,
+            layerId,
+            whereClause,
+            fields
+        ) {
+            return new Promise(function(resolve, reject) {
+                var query = L.esri.query({
+                    url: baseUrl + layerId,
+                    useCors: false
+                })
+                .where(whereClause)
+                .fields(fields || ["*"])
+                .precision(6)
+                .returnGeometry(true);
+
+                query.run(
+                    function(
+                        error,
+                        featureCollection,
+                        response
+                    ) {
+                        if (error) {
+                            reject(error);
+                            return;
+                        }
+
+                        if (
+                            !featureCollection ||
+                            !Array.isArray(
+                                featureCollection.features
+                            )
+                        ) {
+                            reject(
+                                new Error(
+                                    "Η υπηρεσία επέστρεψε άκυρα δεδομένα."
+                                )
+                            );
+                            return;
+                        }
+
+                        if (
+                            response &&
+                            response.exceededTransferLimit
+                        ) {
+                            console.warn(
+                                "Το layer " + layerId +
+                                " ξεπέρασε το όριο εγγραφών."
+                            );
+                        }
+
+                        resolve(featureCollection);
+                    }
+                );
+            });
+        }
+
+        function fetchEpolyData(
+            layerId,
+            whereClause,
+            fields,
+            forceRefresh
+        ) {
+            var cacheKey = buildEpolyCacheKey(
+                layerId,
+                whereClause
+            );
+
+            if (
+                !forceRefresh &&
+                epolyDataMemory[cacheKey]
+            ) {
+                return Promise.resolve(
+                    epolyDataMemory[cacheKey]
+                );
+            }
+
+            if (
+                !forceRefresh &&
+                epolyNetworkPromises[cacheKey]
+            ) {
+                return epolyNetworkPromises[cacheKey];
+            }
+
+            var requestPromise = queryEpolySource(
+                EPOLEODOMIA_PRIMARY_BASE,
+                layerId,
+                whereClause,
+                fields
+            )
+            .catch(function(primaryError) {
+                console.warn(
+                    "Αποτυχία primary e-Πολεοδομίας, " +
+                    "γίνεται δοκιμή fallback:",
+                    primaryError
+                );
+
+                return queryEpolySource(
+                    EPOLEODOMIA_FALLBACK_BASE,
+                    layerId,
+                    whereClause,
+                    fields
+                );
+            })
+            .then(async function(featureCollection) {
+                epolyDataMemory[cacheKey] =
+                    featureCollection;
+
+                await writeEpolyCache(
+                    cacheKey,
+                    layerId,
+                    whereClause,
+                    featureCollection
+                );
+
+                return featureCollection;
+            })
+            .finally(function() {
+                delete epolyNetworkPromises[cacheKey];
+            });
+
+            epolyNetworkPromises[cacheKey] =
+                requestPromise;
+
+            return requestPromise;
+        }
+
+        function filterFeatureCollection(
+            featureCollection,
+            clientFilter
+        ) {
+            if (
+                typeof clientFilter !== "function" ||
+                !featureCollection ||
+                !Array.isArray(featureCollection.features)
+            ) {
+                return featureCollection;
+            }
+
+            return {
+                type: "FeatureCollection",
+                features:
+                    featureCollection.features.filter(
+                        clientFilter
+                    )
+            };
+        }
+
+        function createResilientEpolyLayer(
+            layerId,
+            options
+        ) {
+            var settings = Object.assign(
+                {
+                    where:
+                        EPOLEODOMIA_PREVEZA_PREFECTURE_WHERE,
+                    fields: ["*"],
+                    clientFilter: null
+                },
+                options || {}
+            );
+
+            var wrapper = L.layerGroup();
+            var vectorLayer = L.geoJSON(null, {
+                pane: settings.pane,
+                style: settings.style,
+                onEachFeature: settings.onEachFeature,
+                filter: settings.geoJsonFilter
+            });
+
+            vectorLayer.addTo(wrapper);
+
+            var cacheKey = buildEpolyCacheKey(
+                layerId,
+                settings.where
+            );
+
+            async function loadLayer(forceRefresh) {
+                var usedCachedData = false;
+
+                if (!forceRefresh) {
+                    var cached = await readEpolyCache(
+                        cacheKey
+                    );
+
+                    if (
+                        cached &&
+                        cached.data &&
+                        Array.isArray(
+                            cached.data.features
+                        )
+                    ) {
+                        epolyDataMemory[cacheKey] =
+                            cached.data;
+
+                        vectorLayer.clearLayers();
+                        vectorLayer.addData(
+                            filterFeatureCollection(
+                                cached.data,
+                                settings.clientFilter
+                            )
+                        );
+
+                        usedCachedData = true;
+
+                        var age =
+                            Date.now() -
+                            Number(cached.savedAt || 0);
+
+                        if (
+                            age <
+                            EPOLEODOMIA_CACHE_TTL_MS
+                        ) {
+                            setEpolyCacheStatus(
+                                "Τα πολεοδομικά δεδομένα " +
+                                "φορτώθηκαν άμεσα από την cache.",
+                                "ok"
+                            );
+                            return;
+                        }
+                    }
+                }
+
+                if (!usedCachedData) {
+                    setEpolyCacheStatus(
+                        "Πρώτη φόρτωση δεδομένων " +
+                        "μόνο για την Π.Ε. Πρέβεζας…",
+                        "loading"
+                    );
+                } else {
+                    setEpolyCacheStatus(
+                        "Εμφανίστηκαν τα αποθηκευμένα " +
+                        "δεδομένα και γίνεται ανανέωση…",
+                        "loading"
+                    );
+                }
+
+                try {
+                    var freshData = await fetchEpolyData(
+                        layerId,
+                        settings.where,
+                        settings.fields,
+                        Boolean(forceRefresh)
+                    );
+
+                    vectorLayer.clearLayers();
+                    vectorLayer.addData(
+                        filterFeatureCollection(
+                            freshData,
+                            settings.clientFilter
+                        )
+                    );
+
+                    setEpolyCacheStatus(
+                        "Τα δεδομένα της Π.Ε. Πρέβεζας " +
+                        "αποθηκεύτηκαν για 30 ημέρες.",
+                        "ok"
+                    );
+                } catch (error) {
+                    console.error(
+                        "Σφάλμα e-Πολεοδομίας στο layer " +
+                        layerId + ":",
+                        error
+                    );
+
+                    if (!usedCachedData) {
+                        setEpolyCacheStatus(
+                            "Δεν ήταν δυνατή η φόρτωση " +
+                            "της e-Πολεοδομίας.",
+                            "error"
+                        );
+                    } else {
+                        setEpolyCacheStatus(
+                            "Χρησιμοποιούνται τα αποθηκευμένα " +
+                            "δεδομένα επειδή η υπηρεσία " +
+                            "δεν απάντησε.",
+                            "warning"
+                        );
+                    }
+                }
+            }
+
+            wrapper.getActiveEpolyLayer = function() {
+                return vectorLayer;
+            };
+
+            wrapper.getCachedFeatureCollection =
+                function() {
+                    return epolyDataMemory[cacheKey] ||
+                        null;
+                };
+
+            wrapper.redrawEpolyLayer = function() {
+                try {
+                    if (
+                        typeof vectorLayer.bringToFront ===
+                        "function"
+                    ) {
+                        vectorLayer.bringToFront();
+                    }
+                } catch (error) {}
+            };
+
+            wrapper.reloadEpolyLayer = function() {
+                vectorLayer.clearLayers();
+                return loadLayer(true);
+            };
+
+            wrapper._epolyLayerId = layerId;
+            wrapper._epolyWhere = settings.where;
+            wrapper._epolyCacheKey = cacheKey;
+
+            epolyRegisteredWrappers.push(wrapper);
+
+            loadLayer(false);
+
+            return wrapper;
+        }
+
+        window.refreshPrevezaEpolyCache =
+            async function() {
+                var button = document.getElementById(
+                    "epoly-cache-refresh-button"
+                );
+
+                if (button) {
+                    button.disabled = true;
+                }
+
+                setEpolyCacheStatus(
+                    "Καθαρισμός και ανανέωση της cache…",
+                    "loading"
+                );
+
+                await clearEpolyCacheDatabase();
+
+                try {
+                    await Promise.all(
+                        epolyRegisteredWrappers.map(
+                            function(wrapper) {
+                                if (
+                                    wrapper &&
+                                    typeof wrapper
+                                        .reloadEpolyLayer ===
+                                        "function"
+                                ) {
+                                    return wrapper
+                                        .reloadEpolyLayer();
+                                }
+
+                                return Promise.resolve();
+                            }
+                        )
+                    );
+
+                    setEpolyCacheStatus(
+                        "Η cache ανανεώθηκε επιτυχώς.",
+                        "ok"
+                    );
+                } finally {
+                    if (button) {
+                        button.disabled = false;
+                    }
+                }
+            };
+
+        // ------------------------------------------------------------
+        // 1. ΕΓΚΕΚΡΙΜΕΝΑ ΟΡΙΑ ΟΙΚΙΣΜΩΝ — Layer 22
+        // ------------------------------------------------------------
+        var settlement_boundaries_official =
+            createResilientEpolyLayer(
+                22,
+                {
+                    pane: "epoleodomiaSettlementPane",
+                    where:
+                        EPOLEODOMIA_PREVEZA_PREFECTURE_WHERE,
+                    fields: [
+                        "OBJECTID",
+                        "NAME",
+                        "APOFASH",
+                        "OIKISMOS_TYPE",
+                        "DHMOS"
+                    ],
+                    style: function() {
+                        return {
+                            color: "#ff5a00",
+                            weight: 4,
+                            opacity: 1,
+                            fill: true,
+                            fillColor: "#ffa500",
+                            fillOpacity: 0.10
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        var properties = feature.properties || {};
+                        var name = epolyValue(
+                            properties,
+                            ["NAME", "Ονομασία Οικισμού"],
+                            "Οικισμός"
+                        );
+                        var decision = epolyValue(
+                            properties,
+                            ["APOFASH", "Κωδικός Αριθμός Σχεδίου"],
+                            "-"
+                        );
+                        var settlementType = epolyValue(
+                            properties,
+                            ["OIKISMOS_TYPE", "Τύπος Οικισμού"],
+                            "-"
+                        );
+
+                        layer.bindTooltip(name, {
+                            sticky: true,
+                            direction: "top",
+                            opacity: 1,
+                            className:
+                                "official-settlement-hover-tooltip"
+                        });
+
+                        layer.bindPopup(
+                            '<div style="font-family:Arial,sans-serif;min-width:250px;">' +
+                            '<b style="font-size:15px;">Οικισμός: ' +
+                            name +
+                            '</b><br>' +
+                            '<b>Απόφαση / σχέδιο:</b> ' +
+                            decision +
+                            '<br>' +
+                            '<b>Τύπος:</b> ' +
+                            settlementType +
+                            '<br><small>Πηγή: e-Πολεοδομία – Καθορισμένο Όριο Οικισμού</small>' +
+                            '</div>'
+                        );
+                    }
+                }
+            ).addTo(
+                map_4c47b80f517b28666317d5cc9713d72b
+            );
+
+        // ------------------------------------------------------------
+        // 2. ΠΡΕΒΕΖΑ — ΟΡΙΟ / ΠΟΛΕΟΔΟΜΙΚΕΣ ΕΝΟΤΗΤΕΣ — Layer 13
+        // ------------------------------------------------------------
+        var preveza_urban_plan_official =
+            createResilientEpolyLayer(
+                13,
+                {
+                    pane: "epoleodomiaUrbanPane",
+                    where:
+                        EPOLEODOMIA_PREVEZA_PREFECTURE_WHERE,
+                    fields: [
+                        "OBJECTID",
+                        "APOFASH",
+                        "PL_ENOT_NO",
+                        "DHMOS"
+                    ],
+                    clientFilter: function(feature) {
+                        return Number(
+                            feature &&
+                            feature.properties &&
+                            feature.properties.DHMOS
+                        ) === EPOLEODOMIA_PREVEZA_CITY_CODE;
+                    },
+                    style: function() {
+                        return {
+                            color: "#007dc8",
+                            weight: 4,
+                            opacity: 1,
+                            fill: true,
+                            fillColor: "#00aeef",
+                            fillOpacity: 0.10
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        var properties = feature.properties || {};
+                        var unit = epolyValue(
+                            properties,
+                            ["PL_ENOT_NO", "Κωδικός ΠΕ"],
+                            "-"
+                        );
+                        var decision = epolyValue(
+                            properties,
+                            ["APOFASH", "Κωδικός Αριθμός Σχεδίου"],
+                            "-"
+                        );
+
+                        layer.bindTooltip(
+                            "Πολεοδομική ενότητα: " + unit,
+                            {
+                                sticky: true,
+                                direction: "top",
+                                opacity: 1
+                            }
+                        );
+
+                        layer.bindPopup(
+                            '<div style="font-family:Arial,sans-serif;min-width:250px;">' +
+                            '<b style="font-size:15px;">Πρέβεζα – Σχέδιο πόλης</b><br>' +
+                            '<b>Πολεοδομική ενότητα:</b> ' +
+                            unit +
+                            '<br>' +
+                            '<b>Απόφαση / σχέδιο:</b> ' +
+                            decision +
+                            '<br><small>Πηγή: e-Πολεοδομία – Πολεοδομικές Ενότητες / Τομείς</small>' +
+                            '</div>'
+                        );
+                    }
+                }
+            ).addTo(
+                map_4c47b80f517b28666317d5cc9713d72b
+            );
 
         // Μόνιμη ονομασία της πόλης επάνω στον χάρτη.
-        var preveza_city_label = L.marker([38.9567, 20.7505], {
-            icon: L.divIcon({
-                className: "preveza-city-label",
-                html: '<div style="' +
-                      'font-family:Arial,sans-serif;' +
-                      'font-size:16px;' +
-                      'font-weight:bold;' +
-                      'color:#007dc8;' +
-                      'background:rgba(255,255,255,0.88);' +
-                      'border:2px solid #007dc8;' +
-                      'border-radius:7px;' +
-                      'padding:4px 9px;' +
-                      'white-space:nowrap;' +
-                      'box-shadow:0 2px 6px rgba(0,0,0,.25);' +
-                      '">ΠΡΕΒΕΖΑ</div>',
-                iconSize: [100, 30],
-                iconAnchor: [50, 15]
-            }),
-            interactive: false
-        }).addTo(map_4c47b80f517b28666317d5cc9713d72b);
+        var preveza_city_label = L.marker(
+            [38.9567, 20.7505],
+            {
+                icon: L.divIcon({
+                    className: "preveza-city-label",
+                    html:
+                        '<div style="' +
+                        'font-family:Arial,sans-serif;' +
+                        'font-size:16px;' +
+                        'font-weight:bold;' +
+                        'color:#007dc8;' +
+                        'background:rgba(255,255,255,0.88);' +
+                        'border:2px solid #007dc8;' +
+                        'border-radius:7px;' +
+                        'padding:4px 9px;' +
+                        'white-space:nowrap;' +
+                        'box-shadow:0 2px 6px rgba(0,0,0,.25);' +
+                        '">ΠΡΕΒΕΖΑ</div>',
+                    iconSize: [100, 30],
+                    iconAnchor: [50, 15]
+                }),
+                interactive: false
+            }
+        ).addTo(
+            map_4c47b80f517b28666317d5cc9713d72b
+        );
 
-        // Πλήρης συμπληρωματική προβολή εγκεκριμένων πολεοδομικών σχεδίων.
-        // Περιλαμβάνει πολεοδομικές ενότητες και οικοδομικά τετράγωνα.
-        var approved_urban_plans_all = L.esri.dynamicMapLayer({
-            url: "https://mapsrv16.terra.gr/server/rest/services/EniaiosPsifiakosChartis/e_Poleodomia_branchVersioningV5/MapServer",
-            format: "png32",
-            transparent: true,
-            opacity: 1,
-            minZoom: 7,
-            dynamicLayers: [
+        // ------------------------------------------------------------
+        // 3. ΕΓΚΕΚΡΙΜΕΝΑ ΠΟΛΕΟΔΟΜΙΚΑ ΣΧΕΔΙΑ / Ο.Τ.
+        //    Layer 13: Πολεοδομικές ενότητες
+        //    Layer 8 : Οικοδομικά τετράγωνα
+        // ------------------------------------------------------------
+        var approved_urban_units_layer =
+            createResilientEpolyLayer(
+                13,
                 {
-                    id: 13,
-                    source: {
-                        type: "mapLayer",
-                        mapLayerId: 13
+                    pane: "epoleodomiaUrbanPane",
+                    where:
+                        EPOLEODOMIA_PREVEZA_PREFECTURE_WHERE,
+                    fields: [
+                        "OBJECTID",
+                        "APOFASH",
+                        "PL_ENOT_NO",
+                        "DHMOS"
+                    ],
+                    style: function() {
+                        return {
+                            color: "#006ed2",
+                            weight: 3,
+                            opacity: 1,
+                            fill: true,
+                            fillColor: "#0091ff",
+                            fillOpacity: 0.06
+                        };
                     },
-                    drawingInfo: {
-                        renderer: {
-                            type: "simple",
-                            symbol: {
-                                type: "esriSFS",
-                                style: "esriSFSSolid",
-                                color: [0, 145, 255, 22],
-                                outline: {
-                                    type: "esriSLS",
-                                    style: "esriSLSSolid",
-                                    color: [0, 110, 210, 255],
-                                    width: 2.5
-                                }
-                            }
-                        }
-                    }
-                },
-                {
-                    id: 8,
-                    source: {
-                        type: "mapLayer",
-                        mapLayerId: 8
-                    },
-                    drawingInfo: {
-                        renderer: {
-                            type: "simple",
-                            symbol: {
-                                type: "esriSFS",
-                                style: "esriSFSSolid",
-                                color: [0, 145, 255, 0],
-                                outline: {
-                                    type: "esriSLS",
-                                    style: "esriSLSSolid",
-                                    color: [0, 145, 255, 190],
-                                    width: 1
-                                }
-                            }
-                        }
+                    onEachFeature: function(feature, layer) {
+                        var properties = feature.properties || {};
+                        var unit = epolyValue(
+                            properties,
+                            ["PL_ENOT_NO", "Κωδικός ΠΕ"],
+                            "-"
+                        );
+                        var decision = epolyValue(
+                            properties,
+                            ["APOFASH", "Κωδικός Αριθμός Σχεδίου"],
+                            "-"
+                        );
+
+                        layer.bindPopup(
+                            '<div style="font-family:Arial,sans-serif;min-width:250px;">' +
+                            '<b style="font-size:15px;">Εγκεκριμένη πολεοδομική ενότητα</b><br>' +
+                            '<b>Ενότητα:</b> ' +
+                            unit +
+                            '<br>' +
+                            '<b>Απόφαση / σχέδιο:</b> ' +
+                            decision +
+                            '<br><small>Πηγή: e-Πολεοδομία</small>' +
+                            '</div>'
+                        );
                     }
                 }
-            ]
-        }).addTo(map_4c47b80f517b28666317d5cc9713d72b);
-
-        approved_urban_plans_all.bindPopup(function(error, featureCollection) {
-            if (error || !featureCollection || !featureCollection.features.length) {
-                return false;
-            }
-            var properties = featureCollection.features[0].properties || {};
-            var plan =
-                properties.APOFASH ||
-                properties["Κωδικός Αριθμός Σχεδίου"] ||
-                "-";
-            var unit =
-                properties.PL_ENOT_NO ||
-                properties.OT_NUM ||
-                properties["Κωδικός ΠΕ"] ||
-                properties["Αρίθμηση ΟΤ"] ||
-                "-";
-
-            return (
-                '<div style="font-family:Arial,sans-serif;min-width:250px;">' +
-                '<b style="font-size:15px;">Εγκεκριμένο πολεοδομικό σχέδιο</b><br>' +
-                '<b>Ενότητα / Ο.Τ.:</b> ' + unit + '<br>' +
-                '<b>Απόφαση / σχέδιο:</b> ' + plan +
-                '<br><small>Πηγή: e-Πολεοδομία</small>' +
-                '</div>'
             );
-        });
+
+        var approved_building_blocks_layer =
+            createResilientEpolyLayer(
+                8,
+                {
+                    pane: "epoleodomiaBlocksPane",
+                    where:
+                        EPOLEODOMIA_PREVEZA_PREFECTURE_WHERE,
+                    fields: [
+                        "OBJECTID",
+                        "OT_NUM",
+                        "APOFASH",
+                        "DHMOS"
+                    ],
+                    simplifyFactor: 0.25,
+                    style: function() {
+                        return {
+                            color: "#00a6ff",
+                            weight: 1.6,
+                            opacity: 0.95,
+                            fill: true,
+                            fillColor: "#00b7ff",
+                            fillOpacity: 0.025
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        var properties = feature.properties || {};
+                        var blockNumber = epolyValue(
+                            properties,
+                            ["OT_NUM", "Αρίθμηση ΟΤ"],
+                            "-"
+                        );
+                        var decision = epolyValue(
+                            properties,
+                            ["APOFASH", "Κωδικός Αριθμός Σχεδίου"],
+                            "-"
+                        );
+
+                        layer.bindTooltip(
+                            "Ο.Τ. " + blockNumber,
+                            {
+                                sticky: true,
+                                direction: "top",
+                                opacity: 1
+                            }
+                        );
+
+                        layer.bindPopup(
+                            '<div style="font-family:Arial,sans-serif;min-width:250px;">' +
+                            '<b style="font-size:15px;">Οικοδομικό Τετράγωνο</b><br>' +
+                            '<b>Αρίθμηση Ο.Τ.:</b> ' +
+                            blockNumber +
+                            '<br>' +
+                            '<b>Απόφαση / σχέδιο:</b> ' +
+                            decision +
+                            '<br><small>Πηγή: e-Πολεοδομία – Οικοδομικά Τετράγωνα</small>' +
+                            '</div>'
+                        );
+                    }
+                }
+            );
+
+        var approved_urban_plans_all = L.layerGroup([
+            approved_urban_units_layer,
+            approved_building_blocks_layer
+        ]).addTo(
+            map_4c47b80f517b28666317d5cc9713d72b
+        );
+
+        // Αναγκαστική ανανέωση των vector layers μετά από zoom/resize.
+        function refreshEpolyLayers() {
+            [
+                settlement_boundaries_official,
+                preveza_urban_plan_official,
+                approved_urban_units_layer,
+                approved_building_blocks_layer
+            ].forEach(function(group) {
+                if (
+                    group &&
+                    typeof group.redrawEpolyLayer === "function"
+                ) {
+                    group.redrawEpolyLayer();
+                }
+            });
+        }
+
+        map_4c47b80f517b28666317d5cc9713d72b.on(
+            "zoomend moveend",
+            refreshEpolyLayers
+        );
+
+        window.addEventListener(
+            "resize",
+            function() {
+                window.setTimeout(refreshEpolyLayers, 160);
+            }
+        );
 
         // Όλοι οι επίσημα καταγεγραμμένοι οικισμοί του Δήμου Πρέβεζας.
         // Η επίσημη υπηρεσία δίνει σημείο αναφοράς, όχι πολυγωνικό νομικό όριο.
@@ -3298,7 +4038,7 @@ body.kaek-point-delete-mode .leaflet-interactive {
 
         var registered_settlements_points = L.esri.featureLayer({
             url: "https://mapsrv16.terra.gr/server/rest/services/EniaiosPsifiakosChartis/DioikitikiDiairesiNew/MapServer/0",
-            where: "mun_gr LIKE '%ΠΡΕΒΕΖ%'",
+            where: "pu_gr LIKE '%ΠΡΕΒΕΖ%'",
             simplifyFactor: 0.5,
             precision: 5,
             pointToLayer: function(geojson, latlng) {
@@ -5325,19 +6065,100 @@ body.kaek-point-delete-mode .leaflet-interactive {
             }
         }
 
+        function findCachedSettlementAtPoint(latlng) {
+            if (
+                !settlement_boundaries_official ||
+                typeof settlement_boundaries_official
+                    .getCachedFeatureCollection !==
+                    "function"
+            ) {
+                return null;
+            }
+
+            var cached =
+                settlement_boundaries_official
+                    .getCachedFeatureCollection();
+
+            if (
+                !cached ||
+                !Array.isArray(cached.features)
+            ) {
+                return null;
+            }
+
+            var point = turf.point([
+                latlng.lng,
+                latlng.lat
+            ]);
+
+            for (
+                var i = 0;
+                i < cached.features.length;
+                i++
+            ) {
+                var feature = cached.features[i];
+
+                if (
+                    !feature ||
+                    !feature.geometry ||
+                    (
+                        feature.geometry.type !==
+                        "Polygon" &&
+                        feature.geometry.type !==
+                        "MultiPolygon"
+                    )
+                ) {
+                    continue;
+                }
+
+                try {
+                    if (
+                        turf.booleanPointInPolygon(
+                            point,
+                            feature
+                        )
+                    ) {
+                        return feature;
+                    }
+                } catch (error) {}
+            }
+
+            return null;
+        }
+
         function querySettlementAtPoint(latlng) {
-            setBuffer100Status("Αναζήτηση επίσημου ορίου οικισμού…", "");
+            var cachedFeature =
+                findCachedSettlementAtPoint(latlng);
+
+            if (cachedFeature) {
+                setBuffer100PickMode(false);
+                setBuffer100Status(
+                    "Το επίσημο όριο βρέθηκε από την cache.",
+                    "ok"
+                );
+                drawSettlementBuffer100(cachedFeature);
+                return;
+            }
+
+            setBuffer100Status(
+                "Αναζήτηση επίσημου ορίου οικισμού…",
+                ""
+            );
 
             L.esri.query({
-                url: "https://mapsrv16.terra.gr/server/rest/services/EniaiosPsifiakosChartis/e_Poleodomia_branchVersioningV5/FeatureServer/22"
+                url: EPOLEODOMIA_PRIMARY_BASE + "22",
+                useCors: false
             })
             .intersects(latlng)
-            .where("1=1")
+            .where(
+                EPOLEODOMIA_PREVEZA_PREFECTURE_WHERE
+            )
             .fields([
                 "NAME",
                 "APOFASH",
                 "OIKISMOS_TYPE",
                 "STATUS_ID",
+                "DHMOS",
                 "Shape__Area",
                 "Shape__Length"
             ])
@@ -5360,13 +6181,15 @@ body.kaek-point-delete-mode .leaflet-interactive {
                     featureCollection.features.length === 0
                 ) {
                     setBuffer100Status(
-                        "Στο σημείο που πάτησες δεν βρέθηκε επίσημο πολυγωνικό όριο οικισμού.",
+                        "Στο σημείο που πάτησες δεν βρέθηκε επίσημο πολυγωνικό όριο οικισμού της Π.Ε. Πρέβεζας.",
                         "error"
                     );
                     return;
                 }
 
-                drawSettlementBuffer100(featureCollection.features[0]);
+                drawSettlementBuffer100(
+                    featureCollection.features[0]
+                );
             });
         }
 
@@ -6474,6 +7297,34 @@ body.kaek-point-delete-mode .leaflet-interactive {
             destination.appendChild(layerControl);
             layerControl.classList.add(
                 "leaflet-control-layers-expanded"
+            );
+
+            var cacheControls =
+                document.createElement("div");
+
+            cacheControls.className =
+                "epoly-cache-controls";
+
+            cacheControls.innerHTML =
+                '<button id="epoly-cache-refresh-button" ' +
+                'class="epoly-cache-refresh-button" ' +
+                'type="button" ' +
+                'onclick="refreshPrevezaEpolyCache()">' +
+                '<i class="fa-solid fa-rotate"></i> ' +
+                'Ανανέωση πολεοδομικών δεδομένων' +
+                '</button>' +
+                '<div id="epoly-cache-status" ' +
+                'class="epoly-cache-status"></div>' +
+                '<div class="epoly-cache-note">' +
+                'Τα δεδομένα της Π.Ε. Πρέβεζας ' +
+                'αποθηκεύονται στον ίδιο browser για 30 ημέρες.' +
+                '</div>';
+
+            destination.appendChild(cacheControls);
+
+            setEpolyCacheStatus(
+                epolyLastStatusMessage,
+                ""
             );
         } else {
             destination.innerHTML =
