@@ -1911,9 +1911,6 @@ body.kaek-point-delete-mode .leaflet-interactive {
         <button class="vk-btn vk-export" onclick="exportVerifiedKaek()">
             Εξαγωγή όλων
         </button>
-        <button class="vk-btn vk-clear" onclick="deleteCurrentVerifiedKaek()">
-            Διαγραφή αυτού
-        </button>
         <button id="kaek-point-delete-btn"
                 class="vk-btn vk-delete-point"
                 style="grid-column:1 / -1;"
@@ -1984,17 +1981,6 @@ body.kaek-point-delete-mode .leaflet-interactive {
                 <b>Εξαγωγή όλων</b><br>
                 Κατεβάζει σε ένα GeoJSON όλα τα ΚΑΕΚ που έχεις εισαγάγει
                 από Excel και KML/KMZ.
-            </div>
-        </div>
-
-        <div class="vk-help-row">
-            <span class="vk-help-symbol vk-help-delete-one">
-                <i class="fa-solid fa-trash"></i>
-            </span>
-            <div>
-                <b>Διαγραφή αυτού</b><br>
-                Διαγράφει το εισαγόμενο ΚΑΕΚ που είναι γραμμένο στο
-                επάνω πεδίο.
             </div>
         </div>
 
@@ -3191,13 +3177,349 @@ body.kaek-point-delete-mode .leaflet-interactive {
         }
 
         // Σειρά σχεδίασης από κάτω προς τα πάνω:
-        // 410: όρια και καταγεγραμμένοι οικισμοί
+        // 410: όλοι οι οικισμοί και τα όριά τους
         // 420: πολεοδομικές ενότητες / σχέδια πόλης
+        // 425: γεωτεμάχια
         // 430: οικοδομικά τετράγωνα
-        // 645: ΚΑΕΚ
+        // 645: ΚΑΕΚ / κουκκίδες
         ensureEpolyPane("epoleodomiaSettlementPane", 410);
         ensureEpolyPane("epoleodomiaUrbanPane", 420);
+        ensureEpolyPane("cadastralParcelsPane", 425);
         ensureEpolyPane("epoleodomiaBlocksPane", 430);
+
+        // Τα γεωτεμάχια είναι καθαρά οπτικό επίπεδο χωρίς clicks,
+        // popups ή ετικέτες ΚΑΕΚ.
+        map_4c47b80f517b28666317d5cc9713d72b
+            .getPane("cadastralParcelsPane")
+            .style.pointerEvents = "none";
+
+
+        // === KTIMATOLOGIO PARCELS LAYER 425 START ===
+        /*
+         * ΣΤΑΘΕΡΟ TOGGLE ΓΕΩΤΕΜΑΧΙΩΝ
+         *
+         * Το checkbox των Επιπέδων συνδέεται πλέον με ένα απλό
+         * L.LayerGroup, το οποίο προστίθεται/αφαιρείται πάντα κανονικά.
+         * Το απομακρυσμένο ArcGIS FeatureLayer φορτώνεται εσωτερικά.
+         *
+         * Έτσι, ακόμη και αν η υπηρεσία καθυστερήσει ή αποτύχει,
+         * το checkbox παραμένει τσεκαρισμένο και δεν "κολλάει".
+         */
+
+        var CADASTRAL_PRIMARY_URL =
+            "https://services-eu1.arcgis.com/40tFGWzosjaLJpmn/" +
+            "ArcGIS/rest/services/GEOTEMAXIA_LEITOURGOUN_ON_gdb/" +
+            "FeatureServer/0";
+
+        var CADASTRAL_FALLBACK_URL =
+            "https://gis.ktimanet.gr/inspire/rest/services/" +
+            "cadastralparcels/CadastralParcel/MapServer/0";
+
+        var cadastralParcelsLayer = L.layerGroup();
+        var cadastralParcelsDataLayer = null;
+        var cadastralParcelsWanted = false;
+        var cadastralFallbackInUse = false;
+        var cadastralStatusMessage = "Ανενεργό";
+
+        function cadastralLayerStyle() {
+            return {
+                pane: "cadastralParcelsPane",
+                color: "#161616",
+                weight: 1.05,
+                opacity: 0.95,
+                fill: true,
+                fillColor: "#4c81cd",
+                fillOpacity: 0.28,
+                interactive: false
+            };
+        }
+
+        function setCadastralStatus(message, state) {
+            /*
+             * Δεν εμφανίζουμε ορατή κατάσταση κάτω από την επιλογή
+             * "Γεωτεμάχια". Το checkbox αρκεί για να δείχνει αν το
+             * layer είναι ενεργό ή ανενεργό.
+             */
+            cadastralStatusMessage = message;
+
+            document.querySelectorAll(
+                ".cadastral-layer-inline-status"
+            ).forEach(function(status) {
+                status.remove();
+            });
+        }
+
+        function buildCadastralDataLayer(useFallback) {
+            var url = useFallback
+                ? CADASTRAL_FALLBACK_URL
+                : CADASTRAL_PRIMARY_URL;
+
+            var whereClause = useFallback
+                ? "1=1"
+                : "KAEK LIKE '400%'";
+
+            var layer = L.esri.featureLayer({
+                pane: "cadastralParcelsPane",
+                url: url,
+                where: whereClause,
+                fields: ["OBJECTID"],
+                minZoom: 14,
+                maxZoom: 20,
+                simplifyFactor: 0.32,
+                precision: 6,
+                cacheLayers: true,
+                renderer: L.canvas({padding: 0.55}),
+                style: cadastralLayerStyle
+            });
+
+            layer.on("loading", function() {
+                setCadastralStatus(
+                    useFallback
+                        ? "Φόρτωση από εφεδρική επίσημη πηγή…"
+                        : "Φόρτωση γεωτεμαχίων…",
+                    "loading"
+                );
+            });
+
+            layer.on("load", function() {
+                setCadastralStatus(
+                    useFallback
+                        ? "Ενεργό — εφεδρική επίσημη πηγή"
+                        : "Ενεργό",
+                    "ok"
+                );
+            });
+
+            layer.on("requesterror", function(error) {
+                console.warn(
+                    "Σφάλμα φόρτωσης γεωτεμαχίων:",
+                    error
+                );
+
+                if (!useFallback && !cadastralFallbackInUse) {
+                    cadastralFallbackInUse = true;
+
+                    try {
+                        if (
+                            cadastralParcelsDataLayer &&
+                            map_4c47b80f517b28666317d5cc9713d72b
+                                .hasLayer(cadastralParcelsDataLayer)
+                        ) {
+                            map_4c47b80f517b28666317d5cc9713d72b
+                                .removeLayer(cadastralParcelsDataLayer);
+                        }
+                    } catch (removeError) {
+                        console.warn(
+                            "Δεν αφαιρέθηκε η αρχική πηγή:",
+                            removeError
+                        );
+                    }
+
+                    cadastralParcelsDataLayer =
+                        buildCadastralDataLayer(true);
+
+                    if (cadastralParcelsWanted) {
+                        setCadastralStatus(
+                            "Η αρχική πηγή δεν απάντησε — δοκιμή εφεδρικής…",
+                            "loading"
+                        );
+
+                        try {
+                            cadastralParcelsDataLayer.addTo(
+                                map_4c47b80f517b28666317d5cc9713d72b
+                            );
+                        } catch (fallbackError) {
+                            console.error(
+                                "Αποτυχία εφεδρικής πηγής:",
+                                fallbackError
+                            );
+                            setCadastralStatus(
+                                "Σφάλμα σύνδεσης με την υπηρεσία",
+                                "error"
+                            );
+                        }
+                    }
+
+                    return;
+                }
+
+                setCadastralStatus(
+                    "Σφάλμα σύνδεσης με την υπηρεσία",
+                    "error"
+                );
+            });
+
+            return layer;
+        }
+
+        function ensureCadastralDataLayer() {
+            if (!cadastralParcelsDataLayer) {
+                cadastralParcelsDataLayer =
+                    buildCadastralDataLayer(false);
+            }
+
+            return cadastralParcelsDataLayer;
+        }
+
+        function showCadastralDataLayer() {
+            cadastralParcelsWanted = true;
+
+            /*
+             * Σε πολύ μακρινή κλίμακα τα γεωτεμάχια δεν είναι πρακτικά
+             * ορατά και η υπηρεσία δεν πρέπει να φορτώνει χιλιάδες
+             * πολύγωνα. Με το πάτημα μεταβαίνουμε μόνο στο zoom 14,
+             * κρατώντας το ίδιο κέντρο του χάρτη.
+             */
+            if (
+                map_4c47b80f517b28666317d5cc9713d72b
+                    .getZoom() < 14
+            ) {
+                map_4c47b80f517b28666317d5cc9713d72b
+                    .setZoom(14);
+            }
+
+            var dataLayer = ensureCadastralDataLayer();
+
+            try {
+                if (
+                    !map_4c47b80f517b28666317d5cc9713d72b
+                        .hasLayer(dataLayer)
+                ) {
+                    dataLayer.addTo(
+                        map_4c47b80f517b28666317d5cc9713d72b
+                    );
+                }
+
+                setCadastralStatus(
+                    "Ενεργοποιήθηκε — φόρτωση…",
+                    "loading"
+                );
+            } catch (error) {
+                /*
+                 * Το εξωτερικό layer μπορεί να αποτύχει, αλλά ο wrapper
+                 * παραμένει επάνω στον χάρτη και το checkbox δεν
+                 * αποεπιλέγεται.
+                 */
+                console.error(
+                    "Δεν ενεργοποιήθηκε το data layer:",
+                    error
+                );
+                setCadastralStatus(
+                    "Σφάλμα φόρτωσης — η επιλογή παραμένει ενεργή",
+                    "error"
+                );
+            }
+        }
+
+        function hideCadastralDataLayer() {
+            cadastralParcelsWanted = false;
+
+            if (
+                cadastralParcelsDataLayer &&
+                map_4c47b80f517b28666317d5cc9713d72b
+                    .hasLayer(cadastralParcelsDataLayer)
+            ) {
+                map_4c47b80f517b28666317d5cc9713d72b
+                    .removeLayer(cadastralParcelsDataLayer);
+            }
+
+            setCadastralStatus("Ανενεργό", "off");
+        }
+
+        cadastralParcelsLayer.on("add", function() {
+            showCadastralDataLayer();
+        });
+
+        cadastralParcelsLayer.on("remove", function() {
+            hideCadastralDataLayer();
+        });
+
+        /*
+         * Πρόσθετη ασφάλεια για το checkbox που μεταφέρεται από το
+         * κανονικό Leaflet control μέσα στο συρόμενο panel.
+         */
+        function repairCadastralCheckbox() {
+            var labels = document.querySelectorAll(
+                "#floating-layers-body label"
+            );
+
+            labels.forEach(function(label) {
+                var text = String(label.textContent || "")
+                    .replace(/\s+/g, " ")
+                    .trim();
+
+                if (!text.startsWith("Γεωτεμάχια")) return;
+
+                label.querySelectorAll(
+                    ".cadastral-layer-inline-status"
+                ).forEach(function(status) {
+                    status.remove();
+                });
+
+                var input = label.querySelector(
+                    'input[type="checkbox"]'
+                );
+
+                if (!input || input.dataset.cadastralFixed === "1") {
+                    return;
+                }
+
+                input.dataset.cadastralFixed = "1";
+                input.disabled = false;
+
+                input.addEventListener("change", function() {
+                    /*
+                     * Κανονικά το Leaflet control έχει ήδη κάνει την
+                     * προσθήκη/αφαίρεση. Αυτό λειτουργεί ως εφεδρική
+                     * ασφάλεια αν το control δεν ολοκληρώσει το event.
+                     */
+                    window.setTimeout(function() {
+                        var map =
+                            map_4c47b80f517b28666317d5cc9713d72b;
+
+                        if (
+                            input.checked &&
+                            !map.hasLayer(cadastralParcelsLayer)
+                        ) {
+                            map.addLayer(cadastralParcelsLayer);
+                        } else if (
+                            !input.checked &&
+                            map.hasLayer(cadastralParcelsLayer)
+                        ) {
+                            map.removeLayer(cadastralParcelsLayer);
+                        }
+                    }, 0);
+                });
+
+                input.checked =
+                    map_4c47b80f517b28666317d5cc9713d72b
+                        .hasLayer(cadastralParcelsLayer);
+
+                setCadastralStatus(
+                    cadastralParcelsWanted
+                        ? cadastralStatusMessage
+                        : "Ανενεργό",
+                    cadastralParcelsWanted ? "ok" : "off"
+                );
+            });
+        }
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function() {
+                window.setTimeout(repairCadastralCheckbox, 350);
+                window.setTimeout(repairCadastralCheckbox, 1100);
+                window.setTimeout(repairCadastralCheckbox, 2200);
+            }
+        );
+
+        map_4c47b80f517b28666317d5cc9713d72b.on(
+            "overlayadd overlayremove",
+            function() {
+                window.setTimeout(repairCadastralCheckbox, 0);
+            }
+        );
+        // === KTIMATOLOGIO PARCELS LAYER 425 END ===
 
         function epolyValue(properties, names, fallback) {
             var source = properties || {};
@@ -6218,6 +6540,21 @@ body.kaek-point-delete-mode .leaflet-interactive {
                     properties.source ||
                     "Χειροκίνητη σχεδίαση";
 
+                var isCustomSettlement =
+                    String(properties.source || "")
+                        .toLowerCase()
+                        .indexOf("χειροκίνη") !== -1 ||
+                    String(properties.id || "")
+                        .indexOf("settlement_") === 0;
+
+                var boundaryDescription = isCustomSettlement
+                    ? "το χειροκίνητο περίγραμμα"
+                    : "το επίσημο όριο";
+
+                var geometryDescription = isCustomSettlement
+                    ? "το χειροκίνητο πολυγωνικό όριο"
+                    : "το επίσημο πολυγωνικό όριο";
+
                 var originalArea = turf.area(feature);
                 var bufferedArea = turf.area(buffered);
                 var ringArea = Math.max(0, bufferedArea - originalArea);
@@ -6247,7 +6584,7 @@ body.kaek-point-delete-mode .leaflet-interactive {
                             '<h4 style="margin:0 0 8px;">' +
                             'Ζώνη 100 μ. – ' + settlementName +
                             '</h4>' +
-                            '<b>Απόσταση:</b> 100 μέτρα από το επίσημο όριο<br>' +
+                            '<b>Απόσταση:</b> 100 μέτρα από ' + boundaryDescription + '<br>' +
                             '<b>Απόφαση / σχέδιο:</b> ' + decision + '<br>' +
                             '<b>Εμβαδόν οικισμού:</b> ' +
                             formatGreekNumber(originalArea, 2) + ' τ.μ.<br>' +
@@ -6255,7 +6592,7 @@ body.kaek-point-delete-mode .leaflet-interactive {
                             formatGreekNumber(bufferedArea, 2) + ' τ.μ.<br>' +
                             '<b>Πρόσθετη έκταση ζώνης:</b> ' +
                             formatGreekNumber(ringArea, 2) + ' τ.μ.<br>' +
-                            '<small>Ο υπολογισμός έγινε γεωμετρικά από το επίσημο πολυγωνικό όριο.</small>' +
+                            '<small>Ο υπολογισμός έγινε γεωμετρικά από ' + geometryDescription + '.</small>' +
                             '</div>'
                         );
                     }
@@ -6342,7 +6679,86 @@ body.kaek-point-delete-mode .leaflet-interactive {
             return null;
         }
 
+        function findCustomSettlementAtPoint(latlng) {
+            if (
+                typeof customSettlementsLayer === "undefined" ||
+                !customSettlementsLayer ||
+                typeof customSettlementsLayer.eachLayer !== "function"
+            ) {
+                return null;
+            }
+
+            var point = turf.point([
+                latlng.lng,
+                latlng.lat
+            ]);
+
+            var matchedFeature = null;
+
+            customSettlementsLayer.eachLayer(function(layer) {
+                if (matchedFeature) return;
+                if (!layer || typeof layer.toGeoJSON !== "function") return;
+
+                try {
+                    var feature = layer.toGeoJSON();
+
+                    if (
+                        !feature ||
+                        !feature.geometry ||
+                        (
+                            feature.geometry.type !== "Polygon" &&
+                            feature.geometry.type !== "MultiPolygon"
+                        )
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        turf.booleanPointInPolygon(
+                            point,
+                            feature,
+                            {ignoreBoundary: false}
+                        )
+                    ) {
+                        feature.properties =
+                            feature.properties || {};
+
+                        feature.properties.source =
+                            feature.properties.source ||
+                            "Χειροκίνητη σχεδίαση";
+
+                        matchedFeature = feature;
+                    }
+                } catch (error) {
+                    console.warn(
+                        "Δεν ελέγχθηκε χειροκίνητος οικισμός:",
+                        error
+                    );
+                }
+            });
+
+            return matchedFeature;
+        }
+
         function querySettlementAtPoint(latlng) {
+            /*
+             * ΠΡΩΤΑ ελέγχουμε τους οικισμούς που έχει σχεδιάσει
+             * και αποθηκεύσει ο χρήστης. Έτσι η λειτουργία των
+             * 100 μ. δεν εξαρτάται από καμία εξωτερική υπηρεσία.
+             */
+            var customFeature =
+                findCustomSettlementAtPoint(latlng);
+
+            if (customFeature) {
+                setBuffer100PickMode(false);
+                setBuffer100Status(
+                    "Βρέθηκε ο χειροκίνητος οικισμός.",
+                    "ok"
+                );
+                drawSettlementBuffer100(customFeature);
+                return;
+            }
+
             var cachedFeature =
                 findCachedSettlementAtPoint(latlng);
 
@@ -6357,7 +6773,7 @@ body.kaek-point-delete-mode .leaflet-interactive {
             }
 
             setBuffer100Status(
-                "Αναζήτηση επίσημου ορίου οικισμού…",
+                "Δεν βρέθηκε δικός σου οικισμός. Αναζήτηση επίσημου ορίου…",
                 ""
             );
 
@@ -6409,20 +6825,109 @@ body.kaek-point-delete-mode .leaflet-interactive {
             });
         }
 
-        map_4c47b80f517b28666317d5cc9713d72b.on("click", function(event) {
+        /*
+         * ΔΙΟΡΘΩΣΗ ΕΠΙΛΟΓΗΣ ΟΙΚΙΣΜΟΥ
+         *
+         * Ορισμένα πολυγωνικά layers (οικισμοί, Ο.Τ., σχέδια πόλης)
+         * μπορούν να δεσμεύσουν το click πριν φτάσει στο Leaflet map.
+         * Για αυτό ακούμε το click στο capture phase, απευθείας επάνω
+         * στο container του χάρτη.
+         */
+        var settlementBufferMapContainer =
+            map_4c47b80f517b28666317d5cc9713d72b.getContainer();
+
+        function settlementBufferCaptureClick(event) {
             if (!settlementBufferPickActive) return;
 
+            var target = event.target;
+
             if (
-                event.originalEvent &&
-                event.originalEvent.target &&
-                event.originalEvent.target.closest &&
-                event.originalEvent.target.closest(".floating-tool-panel")
+                target &&
+                target.closest &&
+                (
+                    target.closest(".floating-tool-panel") ||
+                    target.closest(".leaflet-control-container") ||
+                    target.closest(".leaflet-popup")
+                )
             ) {
                 return;
             }
 
-            querySettlementAtPoint(event.latlng);
-        });
+            /*
+             * Σταματάμε το κανονικό click των πολυγώνων όσο βρίσκεται
+             * σε λειτουργία η επιλογή οικισμού, ώστε να μην ανοίγει
+             * απλώς popup αντί να δημιουργείται η ζώνη.
+             */
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
+
+            if (event.stopImmediatePropagation) {
+                event.stopImmediatePropagation();
+            }
+
+            var rect =
+                settlementBufferMapContainer.getBoundingClientRect();
+
+            var containerPoint = L.point(
+                event.clientX - rect.left,
+                event.clientY - rect.top
+            );
+
+            var latlng =
+                map_4c47b80f517b28666317d5cc9713d72b
+                    .containerPointToLatLng(containerPoint);
+
+            /*
+             * Απενεργοποιείται αμέσως για να μην εκτελεστεί δεύτερο
+             * query από κάποιο άλλο click handler.
+             */
+            setBuffer100PickMode(false);
+            querySettlementAtPoint(latlng);
+        }
+
+        settlementBufferMapContainer.addEventListener(
+            "click",
+            settlementBufferCaptureClick,
+            true
+        );
+
+        /*
+         * Διατηρείται και το κανονικό Leaflet click ως εφεδρική λύση
+         * για browsers που δεν δίνουν DOM click στο capture handler.
+         */
+        map_4c47b80f517b28666317d5cc9713d72b.on(
+            "click",
+            function(event) {
+                if (!settlementBufferPickActive) return;
+
+                if (
+                    event.originalEvent &&
+                    event.originalEvent.target &&
+                    event.originalEvent.target.closest &&
+                    (
+                        event.originalEvent.target.closest(
+                            ".floating-tool-panel"
+                        ) ||
+                        event.originalEvent.target.closest(
+                            ".leaflet-control-container"
+                        ) ||
+                        event.originalEvent.target.closest(
+                            ".leaflet-popup"
+                        )
+                    )
+                ) {
+                    return;
+                }
+
+                setBuffer100PickMode(false);
+                querySettlementAtPoint(event.latlng);
+            }
+        );
 
         // ============================================================
         // Χειροκίνητη σχεδίαση οικισμών
@@ -6630,6 +7135,7 @@ body.kaek-point-delete-mode .leaflet-interactive {
             layer.feature.properties = layer.feature.properties || {};
 
             layer.options = layer.options || {};
+            layer.options.pane = "epoleodomiaSettlementPane";
             layer.options.className = (
                 (layer.options.className || "") +
                 " custom-settlement-path"
@@ -6816,6 +7322,7 @@ body.kaek-point-delete-mode .leaflet-interactive {
                 showArea: true,
                 repeatMode: false,
                 shapeOptions: {
+                    pane: "epoleodomiaSettlementPane",
                     color: "#8e44ad",
                     weight: 4,
                     opacity: 1,
@@ -7128,6 +7635,7 @@ body.kaek-point-delete-mode .leaflet-interactive {
 "Ζώνη 100 μ. οικισμού" : settlementBuffer100Layer,
 "Επιβεβαιωμένα νέα ΚΑΕΚ" : verifiedKaekLayer,
                     "Εγκεκριμένα πολεοδομικά σχέδια / Ο.Τ." : approved_urban_plans_all,
+                    "Γεωτεμάχια" : cadastralParcelsLayer,
 "Όλοι οι καταγεγραμμένοι οικισμοί Πρέβεζας" : registered_settlements_group,
 "Πρέβεζα – όριο σχεδίου πόλης" : preveza_urban_plan_official,
 "Εγκεκριμένα όρια οικισμών" : settlement_boundaries_official,
