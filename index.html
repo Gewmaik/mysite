@@ -1458,14 +1458,197 @@ body.kaek-point-delete-mode .leaflet-interactive {
     gap: 10px;
 }
 
-.excel-import-layer-color {
+.excel-import-color-control {
+    position: relative;
     width: 58px;
     height: 42px;
+    flex: 0 0 58px;
+}
+
+.excel-import-layer-color {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.excel-import-color-trigger {
+    width: 100%;
+    height: 100%;
     padding: 2px;
     border: 1px solid #9eabb4;
     border-radius: 7px;
-    background: #fff;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(145deg, #fff, #edf5f8);
+    box-shadow: 0 2px 7px rgba(25,65,85,.16);
     cursor: pointer;
+}
+
+.excel-import-color-trigger-ring {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: conic-gradient(
+        #ff3b30,
+        #ffcc00,
+        #76ff03,
+        #00c7be,
+        #0a84ff,
+        #bf5af2,
+        #ff375f,
+        #ff3b30
+    );
+    box-shadow: 0 0 0 2px #fff, 0 0 0 3px #9fb2bc;
+}
+
+.excel-import-color-trigger-swatch {
+    display: block;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: #e74c3c;
+    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+}
+
+.excel-import-color-trigger:focus-visible {
+    outline: 3px solid rgba(21,150,229,.28);
+    outline-offset: 2px;
+}
+
+.excel-import-color-popover {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 8px);
+    left: 0;
+    display: none;
+    width: min(274px, calc(100vw - 76px));
+    box-sizing: border-box;
+    padding: 11px;
+    border: 1px solid #8fb6cc;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 10px 28px rgba(0,0,0,.28);
+}
+
+.excel-import-color-popover.is-visible {
+    display: block;
+}
+
+.excel-import-color-popover-title {
+    margin-bottom: 10px;
+    color: #12324a;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.excel-import-color-wheel-wrap {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow:
+        0 8px 20px rgba(16,49,66,.22),
+        0 0 0 4px #fff,
+        0 0 0 5px #9fb8c4;
+}
+
+.excel-import-color-wheel {
+    display: block;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    touch-action: none;
+    cursor: pointer;
+}
+
+.excel-import-color-wheel-marker {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    box-sizing: border-box;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,.75),
+        0 2px 5px rgba(0,0,0,.45);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.excel-import-color-brightness-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 7px;
+    margin-top: 14px;
+    color: #526b78;
+    font-size: 12px;
+}
+
+.excel-import-color-brightness {
+    width: 100%;
+    height: 7px;
+    margin: 0;
+    border-radius: 999px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(90deg, #000, #e74c3c);
+    cursor: pointer;
+}
+
+.excel-import-color-brightness::-webkit-slider-thumb {
+    width: 17px;
+    height: 17px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #1596e5;
+    box-shadow: 0 0 0 1px #587684, 0 2px 5px rgba(0,0,0,.3);
+}
+
+.excel-import-color-brightness::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: #1596e5;
+    box-shadow: 0 0 0 1px #587684, 0 2px 5px rgba(0,0,0,.3);
+}
+
+.excel-import-color-hex-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 11px;
+}
+
+.excel-import-color-hex-label {
+    margin: 0 !important;
+    flex: 0 0 auto;
+}
+
+.excel-import-color-hex {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 7px 8px;
+    border: 1px solid #9eabb4;
+    border-radius: 6px;
+    font: 600 12px Arial, sans-serif;
+    text-transform: uppercase;
 }
 
 .excel-import-color-preview {
@@ -3680,11 +3863,66 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
 
         <label for="excel-import-layer-color">Χρώμα κουκκίδων</label>
         <div class="excel-import-color-row">
-            <input id="excel-import-layer-color"
-                   class="excel-import-layer-color"
-                   type="color"
-                   value="#e74c3c"
-                   oninput="updateExcelImportColorPreview()">
+            <div class="excel-import-color-control">
+                <input id="excel-import-layer-color"
+                       class="excel-import-layer-color"
+                       type="hidden"
+                       value="#e74c3c">
+                <button id="excel-import-color-trigger"
+                        class="excel-import-color-trigger"
+                        type="button"
+                        aria-label="Επιλογή χρώματος κουκκίδων"
+                        aria-expanded="false"
+                        aria-controls="excel-import-color-popover"
+                        onclick="openExcelImportColorPicker(event)">
+                    <span class="excel-import-color-trigger-ring">
+                        <span id="excel-import-color-trigger-swatch"
+                              class="excel-import-color-trigger-swatch"></span>
+                    </span>
+                </button>
+                <div id="excel-import-color-popover"
+                     class="excel-import-color-popover">
+                    <div class="excel-import-color-popover-title">
+                        Χρωματικός κύκλος RGB
+                    </div>
+                    <div class="excel-import-color-wheel-wrap">
+                        <canvas id="excel-import-color-wheel"
+                                class="excel-import-color-wheel"
+                                width="220"
+                                height="220"
+                                aria-label="Χρωματικός κύκλος"
+                                onpointerdown="startExcelColorWheelSelection(event)"
+                                onpointermove="moveExcelColorWheelSelection(event)"
+                                onpointerup="stopExcelColorWheelSelection(event)"
+                                onpointercancel="stopExcelColorWheelSelection(event)"></canvas>
+                        <span id="excel-import-color-wheel-marker"
+                              class="excel-import-color-wheel-marker"></span>
+                    </div>
+                    <div class="excel-import-color-brightness-row">
+                        <i class="fa-solid fa-moon" aria-hidden="true"></i>
+                        <input id="excel-import-color-brightness"
+                               class="excel-import-color-brightness"
+                               type="range"
+                               min="0"
+                               max="100"
+                               value="100"
+                               aria-label="Φωτεινότητα χρώματος"
+                               oninput="updateExcelColorWheelBrightness(this.value)">
+                        <i class="fa-solid fa-sun" aria-hidden="true"></i>
+                    </div>
+                    <div class="excel-import-color-hex-row">
+                        <label class="excel-import-color-hex-label"
+                               for="excel-import-color-hex">HEX</label>
+                        <input id="excel-import-color-hex"
+                               class="excel-import-color-hex"
+                               type="text"
+                               value="#E74C3C"
+                               maxlength="7"
+                               spellcheck="false"
+                               oninput="applyExcelImportHexColor()">
+                    </div>
+                </div>
+            </div>
             <span id="excel-import-color-preview"
                   class="excel-import-color-preview"
                   style="color:#e74c3c;">
@@ -6179,7 +6417,7 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                         );
 
                         layer.bindTooltip(
-                            "Πολεοδομική ενότητα: " + unit,
+                            "Πρέβεζα – εγκεκριμένο σχέδιο πόλης",
                             {
                                 sticky: true,
                                 direction: "top",
@@ -6201,32 +6439,6 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                     }
                 }
             );
-
-        // Μόνιμη ονομασία της πόλης επάνω στον χάρτη.
-        var preveza_city_label = L.marker(
-            [38.9567, 20.7505],
-            {
-                icon: L.divIcon({
-                    className: "preveza-city-label",
-                    html:
-                        '<div style="' +
-                        'font-family:Arial,sans-serif;' +
-                        'font-size:16px;' +
-                        'font-weight:bold;' +
-                        'color:#006ed2;' +
-                        'background:rgba(255,255,255,0.88);' +
-                        'border:2px solid #006ed2;' +
-                        'border-radius:7px;' +
-                        'padding:4px 9px;' +
-                        'white-space:nowrap;' +
-                        'box-shadow:0 2px 6px rgba(0,0,0,.25);' +
-                        '">ΠΡΕΒΕΖΑ</div>',
-                    iconSize: [100, 30],
-                    iconAnchor: [50, 15]
-                }),
-                interactive: false
-            }
-        );
 
         // ------------------------------------------------------------
         // 3. ΕΓΚΕΚΡΙΜΕΝΑ ΠΟΛΕΟΔΟΜΙΚΑ ΣΧΕΔΙΑ / Ο.Τ.
@@ -6486,12 +6698,9 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
 
         var approved_urban_plans_all = L.layerGroup([
             preveza_urban_plan_official,
-            preveza_city_label,
             approved_urban_units_layer,
             approved_building_blocks_layer
-        ]).addTo(
-            map_4c47b80f517b28666317d5cc9713d72b
-        );
+        ]);
 
         // Αναγκαστική ανανέωση των vector layers μετά από zoom/resize.
         function refreshEpolyLayers() {
@@ -6664,7 +6873,7 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
 
         registered_settlements_points.addTo(registered_settlements_group);
 
-        var verifiedKaekLayer = L.layerGroup().addTo(map_4c47b80f517b28666317d5cc9713d72b);
+        var verifiedKaekLayer = L.layerGroup();
 
         (function() {
             const STORAGE_KEY = "verified_kaek_features_v1";
@@ -7255,16 +7464,12 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
         var municipalKaekLayer = L.layerGroup([
             geo_json_f77830402a9d13ae85fcb11a1ca116a2,
             municipalExcelKaekLayer
-        ]).addTo(
-            map_4c47b80f517b28666317d5cc9713d72b
-        );
+        ]);
 
         var ekKaekLayer = L.layerGroup([
             initialEkKaekLayer,
             municipalEkKaekLayer
-        ]).addTo(
-            map_4c47b80f517b28666317d5cc9713d72b
-        );
+        ]);
 
         var excelKaekLayer = L.layerGroup().addTo(
             map_4c47b80f517b28666317d5cc9713d72b
@@ -7275,6 +7480,7 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
             const DEFAULT_EXCEL_LAYER_COLOR = "#e74c3c";
             const excelBatchLayerRegistry = new Map();
             let pendingExcelImportOptions = null;
+            let suppressExcelLayersOnInitialLoad = true;
 
             function normalizeExcelLayerColor(value) {
                 const color = String(value || "").trim();
@@ -7290,12 +7496,333 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                 const preview = document.getElementById(
                     "excel-import-color-preview"
                 );
+                const triggerSwatch = document.getElementById(
+                    "excel-import-color-trigger-swatch"
+                );
+                const hexInput = document.getElementById(
+                    "excel-import-color-hex"
+                );
 
-                if (preview && colorInput) {
-                    preview.style.color = normalizeExcelLayerColor(
+                if (colorInput) {
+                    const color = normalizeExcelLayerColor(
                         colorInput.value
                     );
+
+                    if (preview) preview.style.color = color;
+                    if (triggerSwatch) {
+                        triggerSwatch.style.backgroundColor = color;
+                    }
+                    if (
+                        hexInput &&
+                        document.activeElement !== hexInput
+                    ) {
+                        hexInput.value = color.toUpperCase();
+                    }
                 }
+            };
+
+            let excelColorWheelHue = 0;
+            let excelColorWheelSaturation = 1;
+            let excelColorWheelBrightness = 1;
+            let excelColorWheelDragging = false;
+            let excelColorWheelRendered = false;
+
+            function excelHsvToRgb(hue, saturation, value) {
+                const h = ((Number(hue) % 1) + 1) % 1;
+                const s = Math.max(0, Math.min(1, Number(saturation)));
+                const v = Math.max(0, Math.min(1, Number(value)));
+                const sector = Math.floor(h * 6);
+                const fraction = h * 6 - sector;
+                const p = v * (1 - s);
+                const q = v * (1 - fraction * s);
+                const t = v * (1 - (1 - fraction) * s);
+                const choices = [
+                    [v, t, p],
+                    [q, v, p],
+                    [p, v, t],
+                    [p, q, v],
+                    [t, p, v],
+                    [v, p, q]
+                ];
+                const rgb = choices[sector % 6];
+
+                return rgb.map(function(channel) {
+                    return Math.round(channel * 255);
+                });
+            }
+
+            function excelRgbToHsv(red, green, blue) {
+                const r = Number(red) / 255;
+                const g = Number(green) / 255;
+                const b = Number(blue) / 255;
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                const delta = max - min;
+                let hue = 0;
+
+                if (delta) {
+                    if (max === r) hue = ((g - b) / delta) % 6;
+                    else if (max === g) hue = (b - r) / delta + 2;
+                    else hue = (r - g) / delta + 4;
+                    hue /= 6;
+                    if (hue < 0) hue += 1;
+                }
+
+                return {
+                    h: hue,
+                    s: max ? delta / max : 0,
+                    v: max
+                };
+            }
+
+            function excelRgbToHex(rgb) {
+                return "#" + rgb.map(function(channel) {
+                    return Math.max(0, Math.min(255, channel))
+                        .toString(16)
+                        .padStart(2, "0");
+                }).join("");
+            }
+
+            function setExcelColorWheelFromHex(value) {
+                const color = normalizeExcelLayerColor(value);
+                const red = parseInt(color.slice(1, 3), 16);
+                const green = parseInt(color.slice(3, 5), 16);
+                const blue = parseInt(color.slice(5, 7), 16);
+                const hsv = excelRgbToHsv(red, green, blue);
+
+                excelColorWheelHue = hsv.h;
+                excelColorWheelSaturation = hsv.s;
+                excelColorWheelBrightness = hsv.v;
+            }
+
+            function renderExcelColorWheel() {
+                if (excelColorWheelRendered) return;
+                const canvas = document.getElementById(
+                    "excel-import-color-wheel"
+                );
+                const context = canvas?.getContext?.("2d");
+                if (!canvas || !context) return;
+
+                const width = canvas.width;
+                const height = canvas.height;
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const radius = Math.min(width, height) / 2 - 2;
+                const image = context.createImageData(width, height);
+
+                for (let y = 0; y < height; y += 1) {
+                    for (let x = 0; x < width; x += 1) {
+                        const dx = x + 0.5 - centerX;
+                        const dy = y + 0.5 - centerY;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const index = (y * width + x) * 4;
+
+                        if (distance > radius) {
+                            image.data[index + 3] = 0;
+                            continue;
+                        }
+
+                        const saturation = Math.min(1, distance / radius);
+                        const angle = Math.atan2(dy, dx);
+                        const hue = ((-angle / (Math.PI * 2)) + 1) % 1;
+                        const rgb = excelHsvToRgb(hue, saturation, 1);
+
+                        image.data[index] = rgb[0];
+                        image.data[index + 1] = rgb[1];
+                        image.data[index + 2] = rgb[2];
+                        image.data[index + 3] = 255;
+                    }
+                }
+
+                context.putImageData(image, 0, 0);
+                excelColorWheelRendered = true;
+            }
+
+            function syncExcelColorWheelControls() {
+                const canvas = document.getElementById(
+                    "excel-import-color-wheel"
+                );
+                const marker = document.getElementById(
+                    "excel-import-color-wheel-marker"
+                );
+                const brightness = document.getElementById(
+                    "excel-import-color-brightness"
+                );
+                if (!canvas) return;
+
+                const radius = Math.min(canvas.width, canvas.height) / 2 - 2;
+                const angle = -excelColorWheelHue * Math.PI * 2;
+                const distance = excelColorWheelSaturation * radius;
+                const x = canvas.width / 2 + Math.cos(angle) * distance;
+                const y = canvas.height / 2 + Math.sin(angle) * distance;
+                const fullColor = excelRgbToHex(
+                    excelHsvToRgb(
+                        excelColorWheelHue,
+                        excelColorWheelSaturation,
+                        1
+                    )
+                );
+                const selectedColor = excelRgbToHex(
+                    excelHsvToRgb(
+                        excelColorWheelHue,
+                        excelColorWheelSaturation,
+                        excelColorWheelBrightness
+                    )
+                );
+
+                if (marker) {
+                    marker.style.left = (x / canvas.width * 100) + "%";
+                    marker.style.top = (y / canvas.height * 100) + "%";
+                    marker.style.backgroundColor = selectedColor;
+                }
+                if (brightness) {
+                    brightness.value = String(
+                        Math.round(excelColorWheelBrightness * 100)
+                    );
+                    brightness.style.background =
+                        "linear-gradient(90deg, #000, " + fullColor + ")";
+                }
+            }
+
+            function applyExcelColorWheelSelection() {
+                const colorInput = document.getElementById(
+                    "excel-import-layer-color"
+                );
+                if (!colorInput) return;
+
+                colorInput.value = excelRgbToHex(
+                    excelHsvToRgb(
+                        excelColorWheelHue,
+                        excelColorWheelSaturation,
+                        excelColorWheelBrightness
+                    )
+                );
+                updateExcelImportColorPreview();
+                syncExcelColorWheelControls();
+            }
+
+            function setExcelColorWheelFromPointer(event) {
+                const canvas = document.getElementById(
+                    "excel-import-color-wheel"
+                );
+                if (!canvas) return;
+                const rect = canvas.getBoundingClientRect();
+                if (!rect.width || !rect.height) return;
+
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const radius = Math.min(canvas.width, canvas.height) / 2 - 2;
+                let dx = (event.clientX - rect.left) *
+                    canvas.width / rect.width - centerX;
+                let dy = (event.clientY - rect.top) *
+                    canvas.height / rect.height - centerY;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > radius) {
+                    const scale = radius / distance;
+                    dx *= scale;
+                    dy *= scale;
+                    distance = radius;
+                }
+
+                excelColorWheelHue =
+                    ((-Math.atan2(dy, dx) / (Math.PI * 2)) + 1) % 1;
+                excelColorWheelSaturation = distance / radius;
+                applyExcelColorWheelSelection();
+            }
+
+            window.startExcelColorWheelSelection = function(event) {
+                excelColorWheelDragging = true;
+                event.currentTarget?.setPointerCapture?.(event.pointerId);
+                setExcelColorWheelFromPointer(event);
+            };
+
+            window.moveExcelColorWheelSelection = function(event) {
+                if (!excelColorWheelDragging) return;
+                setExcelColorWheelFromPointer(event);
+            };
+
+            window.stopExcelColorWheelSelection = function(event) {
+                excelColorWheelDragging = false;
+                if (
+                    event.currentTarget?.hasPointerCapture?.(event.pointerId)
+                ) {
+                    event.currentTarget.releasePointerCapture(event.pointerId);
+                }
+            };
+
+            window.updateExcelColorWheelBrightness = function(value) {
+                excelColorWheelBrightness = Math.max(
+                    0,
+                    Math.min(1, Number(value) / 100)
+                );
+                applyExcelColorWheelSelection();
+            };
+
+            window.closeExcelImportColorPicker = function() {
+                const popover = document.getElementById(
+                    "excel-import-color-popover"
+                );
+                const trigger = document.getElementById(
+                    "excel-import-color-trigger"
+                );
+                const wasVisible = Boolean(
+                    popover && popover.classList.contains("is-visible")
+                );
+
+                if (popover) popover.classList.remove("is-visible");
+                if (trigger) trigger.setAttribute("aria-expanded", "false");
+                return wasVisible;
+            };
+
+            window.openExcelImportColorPicker = function(event) {
+                const popover = document.getElementById(
+                    "excel-import-color-popover"
+                );
+                const trigger = document.getElementById(
+                    "excel-import-color-trigger"
+                );
+
+                if (!popover) return;
+                event?.preventDefault();
+                event?.stopPropagation();
+
+                const opening =
+                    !popover.classList.contains("is-visible");
+                popover.classList.toggle("is-visible", opening);
+                if (trigger) {
+                    trigger.setAttribute(
+                        "aria-expanded",
+                        opening ? "true" : "false"
+                    );
+                }
+                if (opening) {
+                    const colorInput = document.getElementById(
+                        "excel-import-layer-color"
+                    );
+                    setExcelColorWheelFromHex(colorInput?.value);
+                    renderExcelColorWheel();
+                    syncExcelColorWheelControls();
+                }
+            };
+
+            window.applyExcelImportHexColor = function() {
+                const colorInput = document.getElementById(
+                    "excel-import-layer-color"
+                );
+                const hexInput = document.getElementById(
+                    "excel-import-color-hex"
+                );
+                if (!colorInput || !hexInput) return;
+
+                let value = String(hexInput.value || "").trim();
+                if (value && value.charAt(0) !== "#") value = "#" + value;
+                if (!/^#[0-9a-f]{6}$/i.test(value)) return;
+
+                colorInput.value = value.toLowerCase();
+                setExcelColorWheelFromHex(colorInput.value);
+                updateExcelImportColorPreview();
+                syncExcelColorWheelControls();
             };
 
             window.openExcelImportSetup = function() {
@@ -7313,6 +7840,7 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                 );
 
                 pendingExcelImportOptions = null;
+                closeExcelImportColorPicker();
                 if (nameInput) nameInput.value = "";
                 if (colorInput) {
                     colorInput.value = DEFAULT_EXCEL_LAYER_COLOR;
@@ -7334,6 +7862,7 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                 );
 
                 pendingExcelImportOptions = null;
+                closeExcelImportColorPicker();
                 if (modal) {
                     modal.classList.remove("is-visible");
                     modal.setAttribute("aria-hidden", "true");
@@ -7369,6 +7898,7 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                     color: normalizeExcelLayerColor(colorInput?.value),
                     visible: true
                 };
+                closeExcelImportColorPicker();
 
                 const modal = document.getElementById(
                     "excel-import-setup-modal"
@@ -7385,6 +7915,17 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                 const modal = document.getElementById(
                     "excel-import-setup-modal"
                 );
+                const colorControl = document.querySelector(
+                    ".excel-import-color-control"
+                );
+
+                if (
+                    colorControl &&
+                    !colorControl.contains(event.target)
+                ) {
+                    closeExcelImportColorPicker();
+                }
+
                 if (
                     modal &&
                     modal.classList.contains("is-visible") &&
@@ -7396,6 +7937,10 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
 
             document.addEventListener("keydown", function(event) {
                 if (event.key !== "Escape") return;
+                if (closeExcelImportColorPicker()) {
+                    event.stopPropagation();
+                    return;
+                }
                 const modal = document.getElementById(
                     "excel-import-setup-modal"
                 );
@@ -7905,8 +8450,20 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
 
                 const stored = getExcelBatches();
                 const cleaned = cleanExcelBatches(stored);
+                let storageNeedsUpdate =
+                    JSON.stringify(stored) !== JSON.stringify(cleaned);
 
-                if (JSON.stringify(stored) !== JSON.stringify(cleaned)) {
+                if (suppressExcelLayersOnInitialLoad) {
+                    cleaned.forEach(function(batch) {
+                        if (batch.visible !== false) {
+                            batch.visible = false;
+                            storageNeedsUpdate = true;
+                        }
+                    });
+                    suppressExcelLayersOnInitialLoad = false;
+                }
+
+                if (storageNeedsUpdate) {
                     setExcelBatches(cleaned);
                 }
 
@@ -9885,12 +10442,67 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
             );
         }
 
+        var DEFAULT_CUSTOM_SETTLEMENTS = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"id":"settlement_1782302585919","name":"ΟΙΚΙΣΜΟΣ ΠΥΡΟΣΒΕΣΤΩΝ","createdAt":"2026-06-24T12:03:05.919Z","source":"Χειροκίνητη σχεδίαση","updatedAt":"2026-06-24T12:03:10.510Z"},"geometry":{"type":"Polygon","coordinates":[[[20.767111,38.994177],[20.767717,38.993776],[20.767588,38.99318],[20.768189,38.992759],[20.769895,38.991458],[20.769487,38.991275],[20.768709,38.990962],[20.767835,38.990724],[20.767272,38.990428],[20.766456,38.990395],[20.766107,38.989978],[20.765587,38.989282],[20.765909,38.988906],[20.765491,38.98859],[20.764976,38.988027],[20.763833,38.987902],[20.763752,38.987601],[20.765496,38.987113],[20.766794,38.986938],[20.76799,38.987126],[20.768098,38.986375],[20.767851,38.985521],[20.767159,38.985567],[20.766209,38.985637],[20.765641,38.985696],[20.76512,38.985725],[20.764841,38.985838],[20.765104,38.986747],[20.763495,38.986847],[20.762878,38.986913],[20.762277,38.987001],[20.761564,38.985708],[20.76063,38.985958],[20.759676,38.986217],[20.759643,38.987268],[20.759568,38.98758],[20.759123,38.988035],[20.75864,38.988923],[20.758882,38.989136],[20.759423,38.989353],[20.759756,38.989924],[20.760051,38.99042],[20.760705,38.990995],[20.760882,38.991208],[20.761784,38.9918],[20.762626,38.992288],[20.764107,38.992997],[20.766027,38.993864],[20.767111,38.994177]]]}},{"type":"Feature","properties":{"id":"settlement_1782302869278","name":"ΟΙΚΙΣΜΟΣ ΑΝΑΛΗΨΗ","createdAt":"2026-06-24T12:07:49.278Z","source":"Χειροκίνητη σχεδίαση","updatedAt":"2026-06-24T12:07:54.535Z"},"geometry":{"type":"Polygon","coordinates":[[[20.757025,38.995757],[20.756092,38.99333],[20.755759,38.992526],[20.755813,38.992288],[20.755486,38.991225],[20.755293,38.991275],[20.754971,38.991412],[20.754778,38.991587],[20.754595,38.991896],[20.754504,38.992184],[20.754408,38.992455],[20.754402,38.992571],[20.754139,38.992601],[20.753742,38.992646],[20.753426,38.992638],[20.753061,38.992588],[20.752868,38.992551],[20.752675,38.992538],[20.752283,38.992559],[20.752053,38.992592],[20.752047,38.992797],[20.752079,38.993013],[20.752063,38.993272],[20.752074,38.99348],[20.752106,38.994085],[20.75253,38.994114],[20.75341,38.994289],[20.753855,38.994448],[20.754333,38.994669],[20.754188,38.995223],[20.754483,38.99539],[20.754982,38.995782],[20.755212,38.995999],[20.755405,38.996215],[20.755572,38.996403],[20.755674,38.99652],[20.755969,38.996361],[20.756215,38.996232],[20.756446,38.996128],[20.756688,38.995986],[20.757025,38.995757]]]}},{"type":"Feature","properties":{"id":"settlement_1782303584853","name":"ΟΙΚΙΣΜΟΣ ΑΝΑΛΗΨΗ","createdAt":"2026-06-24T12:19:44.853Z","source":"Χειροκίνητη σχεδίαση","updatedAt":"2026-06-24T12:19:48.176Z"},"geometry":{"type":"Polygon","coordinates":[[[20.751656,38.998396],[20.753759,38.997745],[20.753174,38.996424],[20.752954,38.996361],[20.752514,38.996336],[20.751929,38.996432],[20.75172,38.996553],[20.751205,38.996895],[20.750588,38.996365],[20.750556,38.995978],[20.75039,38.995398],[20.749531,38.995698],[20.748984,38.995277],[20.747289,38.996107],[20.748008,38.996795],[20.747756,38.996974],[20.748239,38.997533],[20.748641,38.997258],[20.749204,38.997441],[20.750443,38.996841],[20.750653,38.997187],[20.751033,38.997141],[20.751082,38.997358],[20.751554,38.998425],[20.751656,38.998396]]]}},{"type":"Feature","properties":{"id":"settlement_1782303934156","name":"ΟΙΚΙΣΜΟΣ ΠΑΡΓΙΝΟΣΚΑΛΑ","createdAt":"2026-06-24T12:25:34.156Z","source":"Χειροκίνητη σχεδίαση","updatedAt":"2026-06-24T12:25:35.710Z"},"geometry":{"type":"Polygon","coordinates":[[[20.728814,38.953172],[20.731217,38.95399],[20.731947,38.95165],[20.73104,38.951504],[20.731705,38.950085],[20.731684,38.950035],[20.731174,38.950248],[20.730633,38.951274],[20.729645,38.951266],[20.729324,38.951416],[20.728873,38.952814],[20.728814,38.953172]]]}},{"type":"Feature","properties":{"id":"settlement_1782304173547","name":"ΟΙΚΙΣΜΟΣ ΔΡΟΣΙΑΣ","createdAt":"2026-06-24T12:29:33.547Z","source":"Χειροκίνητη σχεδίαση","updatedAt":"2026-06-24T12:29:35.560Z"},"geometry":{"type":"Polygon","coordinates":[[[20.724549,38.963063],[20.725166,38.96154],[20.722838,38.960961],[20.721148,38.960568],[20.719668,38.964156],[20.719346,38.965182],[20.720236,38.965332],[20.720612,38.964523],[20.72081,38.964539],[20.7211,38.963693],[20.721357,38.963755],[20.721679,38.963159],[20.723063,38.963538],[20.722983,38.963747],[20.723948,38.963868],[20.724549,38.963063]]]}},{"type":"Feature","properties":{"id":"settlement_1782304473376","name":"ΟΙΚΙΣΜΟΣ ΣΥΝΕΤΑΙΡΙΣΜΟΥ ΓΕΩ/ΝΩΝ ΔΑΣΟ/ΓΩΝ ΚΤΗ/ΤΡΩΝ Κ' ΛΟΙΠΩΝ ΚΛΑΔΩΝ ΗΠΕΙΡΟΥ","createdAt":"2026-06-24T12:34:33.376Z","source":"Χειροκίνητη σχεδίαση","updatedAt":"2026-06-24T12:35:17.476Z"},"geometry":{"type":"Polygon","coordinates":[[[20.713579,39.037028],[20.714019,39.036415],[20.713847,39.035936],[20.714604,39.034882],[20.715103,39.035057],[20.716074,39.033836],[20.716733,39.034078],[20.715757,39.035432],[20.716395,39.03574],[20.715703,39.036545],[20.713536,39.037136],[20.713579,39.037028]]]}},{"type":"Feature","properties":{"id":"settlement_1782304722560","name":"ΟΚΙΣΜΟΣ ΣΚΑΛΑ ΣΚΑΦΙΔΑΚΙ","createdAt":"2026-06-24T12:38:42.560Z","source":"Χειροκίνητη σχεδίαση"},"geometry":{"type":"Polygon","coordinates":[[[20.814779,38.971555],[20.816817,38.968076],[20.816238,38.96806],[20.815734,38.968101],[20.815358,38.968043],[20.815036,38.968026],[20.81465,38.967934],[20.814242,38.967809],[20.813706,38.967643],[20.813352,38.967459],[20.812955,38.96715],[20.812579,38.966867],[20.812397,38.966658],[20.812161,38.966792],[20.811303,38.967317],[20.810605,38.967734],[20.810251,38.968735],[20.814779,38.971555]]]}},{"type":"Feature","properties":{"id":"settlement_1782317616496","name":"ΟΙΚΙΣΜΟΣ ΚΛΕΙΣΜΑ","createdAt":"2026-06-24T16:13:36.496Z","source":"Χειροκίνητη σχεδίαση","updatedAt":"2026-06-24T16:13:39.653Z"},"geometry":{"type":"Polygon","coordinates":[[[20.80258,38.973907],[20.803674,38.971997],[20.803868,38.971905],[20.802398,38.971138],[20.801872,38.971313],[20.801507,38.971363],[20.800252,38.973531],[20.80052,38.973682],[20.801142,38.973832],[20.80258,38.973907]]]}},{"type":"Feature","properties":{"id":"settlement_1782317851315","name":"ΟΙΚΙΣΜΟΣ ΜΗΧΑΝΙΚΩΝ","createdAt":"2026-06-24T16:17:31.315Z","source":"Χειροκίνητη σχεδίαση","updatedAt":"2026-06-24T16:17:33.806Z"},"geometry":{"type":"Polygon","coordinates":[[[20.68114,39.091433],[20.6826,39.093049],[20.683844,39.093015],[20.684187,39.092815],[20.684488,39.092416],[20.684896,39.092316],[20.685217,39.092066],[20.685443,39.091596],[20.685614,39.091408],[20.685899,39.090838],[20.68577,39.090451],[20.685507,39.090159],[20.684874,39.089768],[20.684788,39.08931],[20.684702,39.088685],[20.683447,39.087294],[20.683007,39.087028],[20.682203,39.087378],[20.681366,39.088352],[20.68114,39.091433]]]}}]};
+        var CUSTOM_SETTLEMENT_SEED_VERSION = "2026-06-25-v1";
+        var CUSTOM_SETTLEMENT_SEED_KEY =
+            "custom_settlements_seed_version_v1";
+
+        function mergeDefaultCustomSettlements(collection) {
+            var existingFeatures =
+                collection &&
+                Array.isArray(collection.features)
+                    ? collection.features
+                    : [];
+            var seen = {};
+            var mergedFeatures = [];
+
+            existingFeatures
+                .concat(DEFAULT_CUSTOM_SETTLEMENTS.features || [])
+                .forEach(function(feature) {
+                    if (!feature || !feature.geometry) return;
+
+                    var properties = feature.properties || {};
+                    var featureKey = properties.id
+                        ? "id:" + String(properties.id)
+                        : "geometry:" + JSON.stringify(feature.geometry);
+
+                    if (seen[featureKey]) return;
+                    seen[featureKey] = true;
+                    mergedFeatures.push(feature);
+                });
+
+            return {
+                type: "FeatureCollection",
+                features: mergedFeatures
+            };
+        }
+
         function restoreCustomSettlements() {
             var raw = localStorage.getItem(CUSTOM_SETTLEMENT_STORAGE_KEY);
-            if (!raw) return;
 
             try {
-                var collection = JSON.parse(raw);
+                var collection = raw
+                    ? JSON.parse(raw)
+                    : { type: "FeatureCollection", features: [] };
+                var installedSeedVersion = localStorage.getItem(
+                    CUSTOM_SETTLEMENT_SEED_KEY
+                );
+
+                if (
+                    installedSeedVersion !==
+                    CUSTOM_SETTLEMENT_SEED_VERSION
+                ) {
+                    collection = mergeDefaultCustomSettlements(collection);
+                    localStorage.setItem(
+                        CUSTOM_SETTLEMENT_STORAGE_KEY,
+                        JSON.stringify(collection)
+                    );
+                    localStorage.setItem(
+                        CUSTOM_SETTLEMENT_SEED_KEY,
+                        CUSTOM_SETTLEMENT_SEED_VERSION
+                    );
+                }
+
                 L.geoJSON(collection, {
                     onEachFeature: function(feature, layer) {
                         layer.feature = feature;
@@ -10272,6 +10884,88 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
             if (typeof window.refreshExcelBatchLayerControls === "function") {
                 window.refreshExcelBatchLayerControls();
             }
+
+            // Στην πρώτη εμφάνιση μένουν ενεργά μόνο τα τρία
+            // επίπεδα που έχουν οριστεί για την αρχική εικόνα.
+            (function enforceCleanStartupLayers() {
+                var map =
+                    map_4c47b80f517b28666317d5cc9713d72b;
+
+                var initiallyOff = [
+                    municipalKaekLayer,
+                    ekKaekLayer,
+                    verifiedKaekLayer,
+                    approved_urban_plans_all,
+                    cadastralParcelsLayer,
+                    registered_settlements_group
+                ];
+
+                initiallyOff.forEach(function(layer) {
+                    if (layer && map.hasLayer(layer)) {
+                        map.removeLayer(layer);
+                    }
+                });
+
+                // Ασφάλεια για επιμέρους στρώσεις ΚΑΕΚ που μπορεί
+                // να είχαν προστεθεί απευθείας στον χάρτη.
+                var strayLayers = [
+                    geo_json_f77830402a9d13ae85fcb11a1ca116a2,
+                    initialEkKaekLayer,
+                    initialKaekSearchLayer,
+                    municipalExcelKaekLayer,
+                    municipalEkKaekLayer,
+                    preveza_urban_plan_official,
+                    approved_urban_units_layer,
+                    approved_building_blocks_layer,
+                    registered_settlements_points
+                ];
+
+                strayLayers.forEach(function(layer) {
+                    if (layer && map.hasLayer(layer)) {
+                        map.removeLayer(layer);
+                    }
+                });
+
+                var excelLayersToHide = [];
+                if (
+                    excelKaekLayer &&
+                    typeof excelKaekLayer.eachLayer === "function"
+                ) {
+                    excelKaekLayer.eachLayer(function(layer) {
+                        excelLayersToHide.push(layer);
+                    });
+                }
+
+                excelLayersToHide.forEach(function(layer) {
+                    excelKaekLayer.removeLayer(layer);
+                    if (map.hasLayer(layer)) map.removeLayer(layer);
+                });
+
+                map.eachLayer(function(layer) {
+                    if (layer && layer._excelBatchId) {
+                        map.removeLayer(layer);
+                    }
+                });
+
+                [
+                    customSettlementsLayer,
+                    settlementBuffer100Layer,
+                    settlement_boundaries_official
+                ].forEach(function(layer) {
+                    if (layer && !map.hasLayer(layer)) {
+                        map.addLayer(layer);
+                    }
+                });
+
+                if (
+                    layer_control_8df1f119fc4172689851fa5aaaba77e0 &&
+                    typeof layer_control_8df1f119fc4172689851fa5aaaba77e0
+                        ._update === "function"
+                ) {
+                    layer_control_8df1f119fc4172689851fa5aaaba77e0
+                        ._update();
+                }
+            })();
 
         
     
