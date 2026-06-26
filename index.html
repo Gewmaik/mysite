@@ -63,6 +63,26 @@
                         .foliumtooltip th{
                             padding: 2px; padding-right: 8px;
                         }
+                        .kaek-direct-hover-tooltip {
+                            position: fixed;
+                            z-index: 200000;
+                            display: none;
+                            pointer-events: none;
+                            max-width: min(320px, calc(100vw - 24px));
+                            padding: 6px 9px;
+                            border: 1px solid rgba(0, 0, 0, .16);
+                            border-radius: 4px;
+                            background: rgba(255, 255, 255, .98);
+                            color: #333;
+                            box-shadow: 0 2px 8px rgba(0, 0, 0, .22);
+                            font: 14px/1.25 Arial, sans-serif;
+                            white-space: nowrap;
+                        }
+                        [data-kaek-hover],
+                        .leaflet-interactive[data-kaek-hover],
+                        .excel-kaek-marker {
+                            pointer-events: auto !important;
+                        }
                     </style>
             
     
@@ -4877,15 +4897,195 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
 
         var initialKaekSearchLayer = L.featureGroup();
 
+        var kaekDirectHoverTooltipElement = null;
+
+        function ensureKaekDirectHoverTooltipElement() {
+            if (!kaekDirectHoverTooltipElement) {
+                kaekDirectHoverTooltipElement =
+                    document.createElement("div");
+                kaekDirectHoverTooltipElement.className =
+                    "kaek-direct-hover-tooltip";
+                document.body.appendChild(kaekDirectHoverTooltipElement);
+            }
+
+            return kaekDirectHoverTooltipElement;
+        }
+
+        function showKaekDirectHoverTooltip(kaek, event) {
+            if (
+                !kaek ||
+                document.body.classList.contains("kaek-point-delete-mode")
+            ) {
+                hideKaekDirectHoverTooltip();
+                return;
+            }
+
+            var pointer = event && event.touches && event.touches.length
+                ? event.touches[0]
+                : event;
+
+            if (
+                !pointer ||
+                !Number.isFinite(pointer.clientX) ||
+                !Number.isFinite(pointer.clientY)
+            ) {
+                return;
+            }
+
+            var tooltip = ensureKaekDirectHoverTooltipElement();
+            var offsetX = 12;
+            var offsetY = -38;
+            var nextLeft = pointer.clientX + offsetX;
+            var nextTop = pointer.clientY + offsetY;
+
+            tooltip.textContent = "ΚΑΕΚ: " + kaek;
+            tooltip.style.display = "block";
+
+            var rect = tooltip.getBoundingClientRect();
+
+            if (nextLeft + rect.width > window.innerWidth - 8) {
+                nextLeft = Math.max(8, pointer.clientX - rect.width - 12);
+            }
+
+            if (nextTop < 8) {
+                nextTop = pointer.clientY + 18;
+            }
+
+            tooltip.style.left = nextLeft + "px";
+            tooltip.style.top = nextTop + "px";
+        }
+
+        function hideKaekDirectHoverTooltip() {
+            if (kaekDirectHoverTooltipElement) {
+                kaekDirectHoverTooltipElement.style.display = "none";
+            }
+        }
+
+        function bindDirectKaekHoverTooltip(layer, kaekValue) {
+            var kaek = normalizeKaekPointValue(kaekValue);
+
+            if (!layer || !kaek || layer.__directKaekHoverBound) {
+                return;
+            }
+
+            layer.__directKaekHoverBound = true;
+
+            function attachDirectHover() {
+                var element = layer.getElement && layer.getElement();
+
+                if (!element || element.__directKaekHoverDomBound) {
+                    return;
+                }
+
+                element.__directKaekHoverDomBound = true;
+                element.style.pointerEvents = "auto";
+                element.setAttribute("data-kaek-hover", kaek);
+                element.setAttribute("title", "ΚΑΕΚ: " + kaek);
+
+                function moveTooltip(event) {
+                    showKaekDirectHoverTooltip(kaek, event);
+                }
+
+                function openPopupOnClick(event) {
+                    if (
+                        typeof kaekPointDeleteMode !== "undefined" &&
+                        kaekPointDeleteMode
+                    ) {
+                        return;
+                    }
+
+                    if (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+
+                    hideKaekDirectHoverTooltip();
+
+                    if (
+                        layer.bindPopup &&
+                        (!layer.getPopup || !layer.getPopup()) &&
+                        layer.feature &&
+                        layer.feature.properties &&
+                        typeof layer.feature.properties.popup === "string" &&
+                        layer.feature.properties.popup.trim()
+                    ) {
+                        layer.bindPopup(layer.feature.properties.popup, {
+                            maxWidth: 380
+                        });
+                    }
+
+                    if (
+                        layer.getPopup &&
+                        layer.getPopup() &&
+                        typeof layer.openPopup === "function"
+                    ) {
+                        var popupLatLng =
+                            layer.getLatLng &&
+                            typeof layer.getLatLng === "function"
+                                ? layer.getLatLng()
+                                : undefined;
+                        layer.openPopup(popupLatLng);
+                    }
+                }
+
+                element.addEventListener("pointerenter", moveTooltip);
+                element.addEventListener("pointermove", moveTooltip);
+                element.addEventListener("mouseenter", moveTooltip);
+                element.addEventListener("mousemove", moveTooltip);
+                element.addEventListener("pointerleave", hideKaekDirectHoverTooltip);
+                element.addEventListener("mouseleave", hideKaekDirectHoverTooltip);
+                element.addEventListener("click", openPopupOnClick);
+                element.addEventListener("touchstart", moveTooltip, { passive: true });
+            }
+
+            if (typeof layer.on === "function") {
+                layer.on("add", function() {
+                    window.setTimeout(attachDirectHover, 0);
+                });
+
+                layer.on("remove", hideKaekDirectHoverTooltip);
+            }
+
+            if (layer._map) {
+                window.setTimeout(attachDirectHover, 0);
+            }
+        }
+
+        window.addEventListener("blur", hideKaekDirectHoverTooltip);
+
+        function bindInitialKaekClickPopup(layer, feature) {
+            if (
+                !layer ||
+                !feature ||
+                !feature.properties ||
+                typeof layer.bindPopup !== "function"
+            ) {
+                return;
+            }
+
+            var popupHtml = feature.properties.popup;
+
+            if (typeof popupHtml === "string" && popupHtml.trim()) {
+                layer.bindPopup(popupHtml, {
+                    maxWidth: 380
+                });
+            }
+        }
+
         function geo_json_f77830402a9d13ae85fcb11a1ca116a2_onEachFeature(feature, layer) {
             bindKaekPointDeleteHandler(
                 layer,
                 feature,
                 "initial"
             );
+            bindInitialKaekClickPopup(layer, feature);
 
             // Επίπεδο αναζήτησης με απευθείας markers, όχι εμφωλευμένα groups.
             initialKaekSearchLayer.addLayer(layer);
+            bindDirectKaekHoverTooltip(
+                layer,
+                kaekFromPointFeature(feature)
+            );
 
             layer.on({
             });
@@ -4980,6 +5180,10 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
   "sticky": false,
   "className": "foliumtooltip",
 });
+
+    // Το νέο ενιαίο hover label των ΚΑΕΚ αντικαθιστά το παλιό
+    // Leaflet tooltip, ώστε να μη φαίνονται δύο κουτάκια μαζί.
+    initialKaekSearchLayer.unbindTooltip();
                      
     
     initialKaekSearchLayer.bindPopup(
@@ -8209,6 +8413,11 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                     sourceType
                 );
 
+                bindDirectKaekHoverTooltip(
+                    marker,
+                    featureKaek
+                );
+
                 // Εμφάνιση του ΚΑΕΚ με mouseover, χωρίς να χρειάζεται κλικ.
                 // Εφαρμόζεται τόσο στα ΚΑΕΚ Δημοτικής Περιουσίας
                 // όσο και στα μελλοντικά ΚΑΕΚ από Excel.
@@ -8222,6 +8431,8 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                         pane: "tooltipPane"
                     }
                 );
+                // Use one hover label only; the direct marker hover handles it everywhere.
+                marker.unbindTooltip();
 
                 // Το ίδιο popup δημιουργείται όταν ζητηθεί, όχι 1.344 φορές στην εκκίνηση.
                 marker.bindPopup(function() {
