@@ -266,6 +266,123 @@
     outline: 3px solid rgba(21,150,229,.25);
 }
 
+#fire-risk-toolbar-button i {
+    color: #ff7a00;
+}
+
+#floating-fire-risk-panel {
+    top: 84px;
+    left: 24px;
+    width: 390px;
+}
+
+.fire-risk-card {
+    border-radius: 14px;
+    padding: 14px;
+    color: #17202a;
+    background: linear-gradient(135deg, rgba(255, 222, 89, .88), rgba(255, 255, 255, .78));
+    border: 1px solid rgba(0,0,0,.12);
+    box-shadow: 0 10px 28px rgba(0,0,0,.13);
+}
+
+.fire-risk-card-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.fire-risk-place {
+    font-size: 13px;
+    opacity: .78;
+    margin-bottom: 4px;
+}
+
+.fire-risk-category {
+    font-size: 26px;
+    line-height: 1.05;
+    font-weight: 800;
+}
+
+.fire-risk-badge {
+    min-width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 900;
+    color: #17202a;
+    background: rgba(255,255,255,.48);
+    border: 1px solid rgba(255,255,255,.55);
+}
+
+.fire-risk-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.fire-risk-meta {
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.72);
+    font-size: 12px;
+    color: #101828 !important;
+}
+
+.fire-risk-meta strong {
+    display: block;
+    font-size: 11px;
+    opacity: 1;
+    color: #475467 !important;
+    margin-bottom: 3px;
+}
+
+.fire-risk-meta span {
+    color: #101828 !important;
+    font-weight: 700;
+}
+
+.fire-risk-description {
+    margin: 12px 0 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #101828 !important;
+}
+
+.fire-risk-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.fire-risk-actions button {
+    min-height: 38px;
+    border: 0;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 800;
+    cursor: pointer;
+    background: #1596e5;
+}
+
+.fire-risk-actions button:hover {
+    filter: brightness(1.05);
+}
+
+.fire-risk-actions button:disabled {
+    cursor: wait;
+    opacity: .72;
+}
+
+.fire-risk-secondary {
+    background: #6c5ce7 !important;
+}
+
 /* Κοινή μορφή όλων των συρόμενων παραθύρων */
 .floating-tool-panel {
     position: fixed !important;
@@ -3641,6 +3758,15 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
         <span>Ρυθμίσεις</span>
     </button>
 
+    <button type="button"
+            id="fire-risk-toolbar-button"
+            class="cadastre-tool-button"
+            onclick="toggleFloatingPanel('floating-fire-risk-panel')"
+            title="Κίνδυνος Πυρκαγιάς Πρέβεζας">
+        <i class="fa-solid fa-fire-flame-curved"></i>
+        <span>Πυρκαγιά</span>
+    </button>
+
 </div>
 
 <div id="floating-settings-panel"
@@ -3687,6 +3813,72 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
 
         <div id="geo-settings-status" class="geo-settings-status">
             Ενεργό θέμα: Σκούρο
+        </div>
+    </div>
+</div>
+
+<div id="floating-fire-risk-panel"
+     class="floating-tool-panel"
+     data-panel-key="fire-risk"
+     aria-hidden="true">
+    <div class="floating-panel-header drag-handle">
+        <div class="floating-panel-title">
+            <i class="fa-solid fa-fire-flame-curved"></i>
+            Κίνδυνος Πυρκαγιάς
+        </div>
+        <button class="floating-panel-close"
+                type="button"
+                onclick="closeFloatingPanel('floating-fire-risk-panel')"
+                aria-label="Κλείσιμο">×</button>
+    </div>
+    <div class="floating-panel-body">
+        <div id="fire-risk-card" class="fire-risk-card">
+            <div class="fire-risk-card-top">
+                <div>
+                    <div class="fire-risk-place">Πρέβεζα</div>
+                    <div id="fire-risk-category-name" class="fire-risk-category">
+                        Υψηλή
+                    </div>
+                </div>
+                <div id="fire-risk-category-number" class="fire-risk-badge">3</div>
+            </div>
+
+            <div class="fire-risk-meta-grid">
+                <div class="fire-risk-meta">
+                    <strong>Ημερομηνία ισχύος</strong>
+                    <span id="fire-risk-valid-date">—</span>
+                </div>
+                <div class="fire-risk-meta">
+                    <strong>Τελευταίος έλεγχος</strong>
+                    <span id="fire-risk-last-checked">—</span>
+                </div>
+                <div class="fire-risk-meta">
+                    <strong>Περιοχή</strong>
+                    <span id="fire-risk-area-name">Δήμος Πρέβεζας</span>
+                </div>
+                <div class="fire-risk-meta">
+                    <strong>Πηγή</strong>
+                    <span id="fire-risk-source-name">Πολιτική Προστασία</span>
+                </div>
+            </div>
+
+            <p id="fire-risk-description" class="fire-risk-description">
+                Αυξημένη προσοχή. Αποφυγή εργασιών που μπορούν να προκαλέσουν σπινθήρες.
+            </p>
+        </div>
+
+        <div class="fire-risk-actions">
+            <button id="fire-risk-refresh-button"
+                    type="button"
+                    onclick="refreshFireRiskPanel()">
+                <i class="fa-solid fa-rotate"></i>
+                Ανανέωση
+            </button>
+            <button class="fire-risk-secondary"
+                    type="button"
+                    onclick="openFireRiskOfficialMap()">
+                Επίσημος χάρτης
+            </button>
         </div>
     </div>
 </div>
@@ -11203,6 +11395,139 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
 
 <script>
 (function () {
+    var fireRiskCategories = {
+        1: {
+            categoryName: "Χαμηλή",
+            color: "#2ecc71",
+            colorName: "Πράσινο",
+            description: "Χαμηλός κίνδυνος. Διατηρείται η συνηθισμένη προσοχή."
+        },
+        2: {
+            categoryName: "Μέση",
+            color: "#4fc3f7",
+            colorName: "Γαλάζιο",
+            description: "Μέσος κίνδυνος. Προσοχή σε υπαίθριες εργασίες και καύσεις."
+        },
+        3: {
+            categoryName: "Υψηλή",
+            color: "#ffde59",
+            colorName: "Κίτρινο",
+            description: "Αυξημένη προσοχή. Αποφυγή εργασιών που μπορούν να προκαλέσουν σπινθήρες."
+        },
+        4: {
+            categoryName: "Πολύ υψηλή",
+            color: "#ff9f1a",
+            colorName: "Πορτοκαλί",
+            description: "Πολύ υψηλός κίνδυνος. Απαιτείται αυξημένη ετοιμότητα και αποφυγή κάθε επικίνδυνης δραστηριότητας."
+        },
+        5: {
+            categoryName: "Κατάσταση συναγερμού",
+            color: "#e53935",
+            colorName: "Κόκκινο",
+            description: "Ακραίος κίνδυνος. Απαιτείται πλήρης επαγρύπνηση και άμεση συμμόρφωση με τις οδηγίες των αρχών."
+        }
+    };
+
+    window.fireRiskState = {
+        municipality: "Δήμος Πρέβεζας",
+        validDate: "",
+        category: 3,
+        publicationUrl: "https://civilprotection.gov.gr/arxeio-imerision-xartwn",
+        lastChecked: ""
+    };
+
+    function pad(value) {
+        return String(value).padStart(2, "0");
+    }
+
+    function todayDateText() {
+        var date = new Date();
+        return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+    }
+
+    function timeText() {
+        var date = new Date();
+        return pad(date.getHours()) + ":" + pad(date.getMinutes());
+    }
+
+    function fireRiskCurrentState() {
+        var base = window.fireRiskState || {};
+        var categoryNumber = Number(base.category) || 3;
+        var category = fireRiskCategories[categoryNumber] || fireRiskCategories[3];
+
+        return {
+            municipality: base.municipality || "Δήμος Πρέβεζας",
+            validDate: base.validDate || todayDateText(),
+            category: categoryNumber,
+            categoryName: category.categoryName,
+            color: category.color,
+            colorName: category.colorName,
+            description: category.description,
+            publicationUrl: base.publicationUrl || "https://civilprotection.gov.gr/arxeio-imerision-xartwn",
+            lastChecked: base.lastChecked || timeText()
+        };
+    }
+
+    function setText(id, value) {
+        var element = document.getElementById(id);
+        if (element) element.textContent = value;
+    }
+
+    function updateFireRiskPanel() {
+        var state = fireRiskCurrentState();
+        var card = document.getElementById("fire-risk-card");
+
+        if (card) {
+            card.style.background =
+                "linear-gradient(135deg, " +
+                state.color +
+                " 0%, rgba(255,255,255,.78) 100%)";
+        }
+
+        setText("fire-risk-category-name", state.categoryName);
+        setText("fire-risk-category-number", String(state.category));
+        setText("fire-risk-valid-date", state.validDate);
+        setText("fire-risk-last-checked", state.lastChecked);
+        setText("fire-risk-area-name", state.municipality);
+        setText("fire-risk-source-name", "Πολιτική Προστασία");
+        setText("fire-risk-description", state.description);
+    }
+
+    window.refreshFireRiskPanel = function() {
+        var button = document.getElementById("fire-risk-refresh-button");
+
+        if (button) {
+            button.disabled = true;
+            button.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Ανανέωση';
+        }
+
+        window.fireRiskState.validDate = todayDateText();
+        window.fireRiskState.lastChecked = timeText();
+        updateFireRiskPanel();
+
+        window.setTimeout(function() {
+            if (button) {
+                button.disabled = false;
+                button.innerHTML =
+                    '<i class="fa-solid fa-rotate"></i> Ανανέωση';
+            }
+        }, 450);
+    };
+
+    window.openFireRiskOfficialMap = function() {
+        var state = fireRiskCurrentState();
+        window.open(state.publicationUrl, "_blank", "noopener,noreferrer");
+    };
+
+    document.addEventListener("DOMContentLoaded", updateFireRiskPanel);
+    updateFireRiskPanel();
+})();
+</script>
+
+
+<script>
+(function () {
     const POSITION_KEY = "kaek_floating_panel_positions_v1";
     const SIZE_KEY = "kaek_floating_panel_sizes_v1";
     let highestZ = 12100;
@@ -11299,7 +11624,9 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
             "floating-layers-panel": 1,
             "floating-legend-panel": 2,
             "floating-buffer-panel": 3,
-            "floating-draw-settlement-panel": 4
+            "floating-draw-settlement-panel": 4,
+            "floating-settings-panel": 5,
+            "floating-fire-risk-panel": 6
         };
 
         const buttons = document.querySelectorAll(
