@@ -318,6 +318,54 @@
     border: 1px solid rgba(255,255,255,.55);
 }
 
+.fire-risk-day-switch {
+    margin-top: 12px;
+    padding: 8px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.55);
+    border: 1px solid rgba(255,255,255,.45);
+}
+
+.fire-risk-day-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+}
+
+.fire-risk-day-option {
+    min-height: 43px;
+    border: 1px solid rgba(16,24,40,.18);
+    border-radius: 10px;
+    background: rgba(255,255,255,.76);
+    color: #17202a;
+    cursor: pointer;
+    font-weight: 800;
+    text-align: center;
+    transition: transform .12s ease, background .12s ease, color .12s ease;
+}
+
+.fire-risk-day-option:hover {
+    transform: translateY(-1px);
+}
+
+.fire-risk-day-option.is-active {
+    background: #17202a;
+    color: #fff;
+    border-color: #17202a;
+}
+
+.fire-risk-day-option span,
+.fire-risk-day-option small {
+    display: block;
+}
+
+.fire-risk-day-option small {
+    margin-top: 2px;
+    font-size: 10px;
+    font-weight: 700;
+    opacity: .78;
+}
+
 .fire-risk-meta-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -498,6 +546,18 @@
 .floating-legend-content {
     font-size: 13px;
     line-height: 1.45;
+}
+
+.excel-kaek-legend-items {
+    margin: 2px 0 4px;
+}
+
+.excel-kaek-legend-items:empty {
+    display: none;
+}
+
+.excel-kaek-legend-item {
+    display: block;
 }
 
 /* Το κανονικό Leaflet layer control μεταφέρεται μέσα στο νέο παράθυρο */
@@ -2067,6 +2127,18 @@ body.kaek-point-delete-mode .leaflet-interactive {
     color: #1b4f72;
     font-size: 11px;
     font-weight: 700;
+    line-height: 1.3;
+}
+
+.kaek-total-count {
+    margin: 6px 0;
+    padding: 5px 7px;
+    border-radius: 5px;
+    background: rgba(46, 204, 113, .13);
+    border: 1px solid rgba(46, 204, 113, .35);
+    color: #27ae60;
+    font-size: 11px;
+    font-weight: 800;
     line-height: 1.3;
 }
 
@@ -3843,6 +3915,25 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                 <div id="fire-risk-category-number" class="fire-risk-badge">3</div>
             </div>
 
+            <div class="fire-risk-day-switch" aria-label="Επιλογή ημερήσιου χάρτη">
+                <div class="fire-risk-day-options">
+                    <button id="fire-risk-today-button"
+                            class="fire-risk-day-option is-active"
+                            type="button"
+                            onclick="selectFireRiskDay('today')">
+                        <span>Σήμερα</span>
+                        <small id="fire-risk-today-date">—</small>
+                    </button>
+                    <button id="fire-risk-tomorrow-button"
+                            class="fire-risk-day-option"
+                            type="button"
+                            onclick="selectFireRiskDay('tomorrow')">
+                        <span>Αύριο</span>
+                        <small id="fire-risk-tomorrow-date">—</small>
+                    </button>
+                </div>
+            </div>
+
             <div class="fire-risk-meta-grid">
                 <div class="fire-risk-meta">
                     <strong>Ημερομηνία ισχύος</strong>
@@ -3933,6 +4024,10 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
            inputmode="numeric"
            pattern="[0-9]*"
            autocomplete="off">
+
+    <div id="verified-kaek-total-count" class="kaek-total-count">
+        Σύνολο φορτωμένων ΚΑΕΚ: —
+    </div>
 
     <div id="verified-kaek-search-results"
          class="kaek-all-search-results"
@@ -4177,14 +4272,9 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                 aria-label="Κλείσιμο">×</button>
     </div>
     <div class="floating-panel-body floating-legend-content">
-        <b>Αποτελέσματα myKAEK</b><br>
-Δοκιμή μόνο με το νέο εμπλουτισμένο Excel<br>
-<b>ΚΑΕΚ_ΥΠΟΛΟΙΠΑ_ΕΜΠΛΟΥΤΙΣΜΕΝΑ.xlsx</b><br>
-1344 ΚΑΕΚ με διαθέσιμες συντεταγμένες<br>
-<span style="color:#d62728;">●</span> Πρέβεζα &nbsp;
-<span style="color:#1f77b4;">●</span> Στεφάνη &nbsp;
-<span style="color:#008b8b;">●</span> λοιπές περιοχές<br>
-<span style="color:#008b8b;">●</span> ΚΑΕΚ που εισήχθησαν από Excel<br>
+<span style="color:#d62728;">●</span> ΚΑΕΚ Δημοτικής Περιουσίας<br>
+<span style="color:#76ff03;">●</span> ΚΑΕΚ με ΕΚ<br>
+<div id="excel-kaek-legend-items" class="excel-kaek-legend-items"></div>
 <span style="color:#ff6600;font-size:18px;">▱</span> <b>Εγκεκριμένα όρια οικισμών</b><br>
 <small>Τα περιγράμματα φορτώνονται ζωντανά από την e-Πολεοδομία.</small><br><span style="color:#006ed2;font-size:18px;">▱</span> <b>Εγκεκριμένα πολεοδομικά σχέδια / Ο.Τ.</b>
     </div>
@@ -5003,6 +5093,10 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
             setKaekPointDeleteMode(false);
 
             if (deleted) {
+                if (typeof updateKaekTotalCountDisplays === "function") {
+                    updateKaekTotalCountDisplays();
+                }
+
                 setKaekPointDeleteStatus(
                     "Διαγράφηκε η κουκκίδα του ΚΑΕΚ "
                     + item.kaek + ".",
@@ -7696,6 +7790,9 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                     reloadStored();
                     addFeatureCollectionToMap(collection, true);
                     setStatus("Το ΚΑΕΚ " + kaek + " εισήχθη και αποθηκεύτηκε στον χάρτη.", "ok");
+                    if (typeof updateKaekTotalCountDisplays === "function") {
+                        updateKaekTotalCountDisplays();
+                    }
                 } catch (error) {
                     console.error(error);
                     setStatus("Αποτυχία εισαγωγής: " + error.message, "error");
@@ -7739,6 +7836,9 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                 }
 
                 setStatus("Το ΚΑΕΚ " + kaek + " διαγράφηκε.", "ok");
+                if (typeof updateKaekTotalCountDisplays === "function") {
+                    updateKaekTotalCountDisplays();
+                }
             };
 
             window.clearAllVerifiedKaek = function() {
@@ -7757,6 +7857,9 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                     "Διαγράφηκαν όλα τα εισαγόμενα ΚΑΕΚ.",
                     "ok"
                 );
+                if (typeof updateKaekTotalCountDisplays === "function") {
+                    updateKaekTotalCountDisplays();
+                }
             };
 
             window.exportVerifiedKaek = function() {
@@ -8895,6 +8998,14 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                 });
 
                 registerExcelBatchLayersInControl();
+
+                if (typeof updateKaekTotalCountDisplays === "function") {
+                    updateKaekTotalCountDisplays();
+                }
+
+                if (typeof updateExcelKaekLegendItems === "function") {
+                    updateExcelKaekLegendItems();
+                }
             }
 
             function saveExcelBatchVisibility(batchId, visible) {
@@ -8923,6 +9034,9 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                         excelKaekLayer.addLayer(event.layer);
                     }
                     saveExcelBatchVisibility(batchId, true);
+                    if (typeof updateKaekTotalCountDisplays === "function") {
+                        updateKaekTotalCountDisplays();
+                    }
                 }
             );
 
@@ -8936,6 +9050,9 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                         excelKaekLayer.removeLayer(event.layer);
                     }
                     saveExcelBatchVisibility(batchId, false);
+                    if (typeof updateKaekTotalCountDisplays === "function") {
+                        updateKaekTotalCountDisplays();
+                    }
                 }
             );
 
@@ -9754,6 +9871,31 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
             window.getExcelKaekBatches = function() {
                 return getExcelBatches();
             };
+
+            function updateExcelKaekLegendItems() {
+                const box = document.getElementById(
+                    "excel-kaek-legend-items"
+                );
+
+                if (!box) return;
+
+                const batches = getExcelBatches().filter(function(batch) {
+                    return batch && (batch.features || []).length;
+                });
+
+                box.innerHTML = batches.map(function(batch) {
+                    const color = normalizeExcelLayerColor(batch.color);
+                    const name = escapeExcelHtml(batch.name || "Excel");
+
+                    return '<span class="excel-kaek-legend-item">' +
+                        '<span style="color:' + color + ';">●</span> ' +
+                        name +
+                    '</span>';
+                }).join("");
+            }
+
+            window.updateExcelKaekLegendItems =
+                updateExcelKaekLegendItems;
 
 
             const MUNICIPAL_PROPERTY_SEED_VERSION =
@@ -11433,7 +11575,16 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
         validDate: "",
         category: 3,
         publicationUrl: "https://civilprotection.gov.gr/arxeio-imerision-xartwn",
-        lastChecked: ""
+        lastChecked: "",
+        selectedDay: "today",
+        daily: {
+            today: {
+                category: 3
+            },
+            tomorrow: {
+                category: 3
+            }
+        }
     };
 
     function pad(value) {
@@ -11441,8 +11592,21 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
     }
 
     function todayDateText() {
+        return dateTextFromOffset(0);
+    }
+
+    function tomorrowDateText() {
+        return dateTextFromOffset(1);
+    }
+
+    function dateTextFromOffset(offset) {
         var date = new Date();
+        date.setDate(date.getDate() + offset);
         return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+    }
+
+    function normalizeFireRiskDay(day) {
+        return day === "tomorrow" ? "tomorrow" : "today";
     }
 
     function timeText() {
@@ -11452,18 +11616,27 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
 
     function fireRiskCurrentState() {
         var base = window.fireRiskState || {};
-        var categoryNumber = Number(base.category) || 3;
+        var selectedDay = normalizeFireRiskDay(base.selectedDay);
+        var daily = (base.daily && base.daily[selectedDay]) || {};
+        var categoryNumber = Number(daily.category || base.category) || 3;
         var category = fireRiskCategories[categoryNumber] || fireRiskCategories[3];
 
         return {
             municipality: base.municipality || "Δήμος Πρέβεζας",
-            validDate: base.validDate || todayDateText(),
+            selectedDay: selectedDay,
+            validDate:
+                daily.validDate ||
+                base.validDate ||
+                (selectedDay === "tomorrow" ? tomorrowDateText() : todayDateText()),
             category: categoryNumber,
             categoryName: category.categoryName,
             color: category.color,
             colorName: category.colorName,
             description: category.description,
-            publicationUrl: base.publicationUrl || "https://civilprotection.gov.gr/arxeio-imerision-xartwn",
+            publicationUrl:
+                daily.publicationUrl ||
+                base.publicationUrl ||
+                "https://civilprotection.gov.gr/arxeio-imerision-xartwn",
             lastChecked: base.lastChecked || timeText()
         };
     }
@@ -11471,6 +11644,28 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
     function setText(id, value) {
         var element = document.getElementById(id);
         if (element) element.textContent = value;
+    }
+
+    function updateFireRiskDayButtons(state) {
+        setText("fire-risk-today-date", todayDateText());
+        setText("fire-risk-tomorrow-date", tomorrowDateText());
+
+        var todayButton = document.getElementById("fire-risk-today-button");
+        var tomorrowButton = document.getElementById("fire-risk-tomorrow-button");
+
+        if (todayButton) {
+            todayButton.classList.toggle(
+                "is-active",
+                state.selectedDay === "today"
+            );
+        }
+
+        if (tomorrowButton) {
+            tomorrowButton.classList.toggle(
+                "is-active",
+                state.selectedDay === "tomorrow"
+            );
+        }
     }
 
     function updateFireRiskPanel() {
@@ -11491,7 +11686,13 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
         setText("fire-risk-area-name", state.municipality);
         setText("fire-risk-source-name", "Πολιτική Προστασία");
         setText("fire-risk-description", state.description);
+        updateFireRiskDayButtons(state);
     }
+
+    window.selectFireRiskDay = function(day) {
+        window.fireRiskState.selectedDay = normalizeFireRiskDay(day);
+        updateFireRiskPanel();
+    };
 
     window.refreshFireRiskPanel = function() {
         var button = document.getElementById("fire-risk-refresh-button");
@@ -11502,7 +11703,18 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                 '<i class="fa-solid fa-spinner fa-spin"></i> Ανανέωση';
         }
 
-        window.fireRiskState.validDate = todayDateText();
+        var selectedDay = normalizeFireRiskDay(window.fireRiskState.selectedDay);
+
+        if (!window.fireRiskState.daily) {
+            window.fireRiskState.daily = {};
+        }
+
+        if (!window.fireRiskState.daily[selectedDay]) {
+            window.fireRiskState.daily[selectedDay] = {};
+        }
+
+        window.fireRiskState.daily[selectedDay].validDate =
+            selectedDay === "tomorrow" ? tomorrowDateText() : todayDateText();
         window.fireRiskState.lastChecked = timeText();
         updateFireRiskPanel();
 
@@ -12414,7 +12626,23 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
         let found = findLayerRecursive(initialKaekLayer, targetKaek, visited);
         if (found) return {layer: found, source: "ΚΑΕΚ Δημοτικής Περιουσίας"};
 
-        // 2. Αναζήτηση στα ΚΑΕΚ που εισήχθησαν από Excel.
+        // 2. Αναζήτηση στα ΚΑΕΚ με ΕΚ.
+        if (typeof ekKaekLayer !== "undefined") {
+            found = findLayerRecursive(
+                ekKaekLayer,
+                targetKaek,
+                visited
+            );
+
+            if (found) {
+                return {
+                    layer: found,
+                    source: "ΚΑΕΚ με ΕΚ"
+                };
+            }
+        }
+
+        // 3. Αναζήτηση στα ΚΑΕΚ που εισήχθησαν από Excel.
         if (typeof excelKaekLayer !== "undefined") {
             found = findLayerRecursive(
                 excelKaekLayer,
@@ -12430,7 +12658,7 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
             }
         }
 
-        // 3. Αναζήτηση στα νέα ΚΑΕΚ από KML/KMZ/GeoJSON.
+        // 4. Αναζήτηση στα νέα ΚΑΕΚ από KML/KMZ/GeoJSON.
         if (typeof verifiedKaekLayer !== "undefined") {
             found = findLayerRecursive(
                 verifiedKaekLayer,
@@ -12511,6 +12739,16 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
             visited
         );
 
+        if (typeof ekKaekLayer !== "undefined") {
+            collectSearchableKaekLayers(
+                ekKaekLayer,
+                "ΚΑΕΚ με ΕΚ",
+                ekKaekLayer,
+                collected,
+                visited
+            );
+        }
+
         // Ένα αποτέλεσμα ανά μοναδικό ΚΑΕΚ, ακόμη και αν υπάρχει σε πάνω από μία πηγή.
         const uniqueByKaek = new Map();
 
@@ -12528,6 +12766,36 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
             });
         });
     }
+
+    function getLoadedKaekTotalCount() {
+        try {
+            return buildAllKaekSearchIndex().length;
+        } catch (error) {
+            return 0;
+        }
+    }
+
+    function formatLoadedKaekTotalText(count) {
+        return "Σύνολο φορτωμένων ΚΑΕΚ: " +
+            Number(count || 0).toLocaleString("el-GR");
+    }
+
+    function updateKaekTotalCountDisplays() {
+        const text = formatLoadedKaekTotalText(
+            getLoadedKaekTotalCount()
+        );
+
+        [
+            "kaek-all-total-count",
+            "verified-kaek-total-count"
+        ].forEach(function(id) {
+            const box = document.getElementById(id);
+            if (box) box.textContent = text;
+        });
+    }
+
+    window.updateKaekTotalCountDisplays =
+        updateKaekTotalCountDisplays;
 
     function normalizeSearchDigits(value) {
         return String(value || "").replace(/\D/g, "");
@@ -12595,6 +12863,7 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
 
         box.innerHTML = "";
         box.classList.add("is-visible");
+        updateKaekTotalCountDisplays();
 
         if (queryDigits.length < 3) {
             const note = document.createElement("div");
@@ -12616,6 +12885,7 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
             return;
         }
 
+        const totalCount = getLoadedKaekTotalCount();
         const summary = document.createElement("div");
         summary.className = "kaek-search-results-summary";
         summary.textContent =
@@ -12625,7 +12895,8 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                 : " αποτελέσματα") +
             ' που περιέχουν "' +
             queryDigits +
-            '"';
+            '" • ' +
+            formatLoadedKaekTotalText(totalCount);
         box.appendChild(summary);
 
         const list = document.createElement("div");
@@ -12879,6 +13150,9 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                         '<i class="fa-solid fa-magnifying-glass"></i>' +
                         '</button>' +
                     '</div>' +
+                    '<div id="kaek-all-total-count" class="kaek-total-count">' +
+                        'Σύνολο φορτωμένων ΚΑΕΚ: —' +
+                    '</div>' +
                     '<div id="kaek-all-search-message" class="kaek-all-search-message"></div>' +
                     '<div id="kaek-all-search-results" class="kaek-all-search-results" ' +
                          'role="region" aria-label="Αποτελέσματα αναζήτησης ΚΑΕΚ"></div>' +
@@ -12932,6 +13206,8 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
         }
 
         if (expanded && input) {
+            updateKaekTotalCountDisplays();
+
             window.setTimeout(function () {
                 input.focus();
                 input.select();
@@ -13032,6 +13308,8 @@ body.geo-command-theme:not(.geo-light-mode) .vk-help-row b {
                 }
             });
         }
+
+        updateKaekTotalCountDisplays();
 
         const verifiedResultsBox = document.getElementById(
             "verified-kaek-search-results"
